@@ -109,7 +109,7 @@
 
         .main-container {
             width: 100%;
-            max-width: 700px;
+            max-width: 1200px;
         }
 
         .card {
@@ -138,7 +138,48 @@
         }
 
         .card-body {
-            padding: 30px;
+            padding: 25px;
+        }
+
+        .input-sections-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-section > .form-label {
+            margin-bottom: 8px;
+        }
+
+        .divider-desktop {
+            display: none;
+        }
+
+        .divider {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .input-sections-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+
+            .divider {
+                display: block;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
         }
 
         .form-label {
@@ -180,12 +221,17 @@
         .drop-zone {
             border: 3px dashed #667eea;
             border-radius: 10px;
-            padding: 40px 20px;
+            padding: 25px 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             background-color: #f8f9ff;
-            margin: 20px 0;
+            margin: 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         body.dark-mode .drop-zone {
@@ -215,9 +261,18 @@
         }
 
         .drop-zone i {
-            font-size: 32px;
+            font-size: 28px;
             color: #667eea;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+        }
+
+        .drop-zone p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .drop-zone strong {
+            display: block;
         }
 
         body.dark-mode .drop-zone i {
@@ -364,6 +419,18 @@
             background: #2d2d2d;
         }
 
+        #textArea {
+            resize: vertical;
+            min-height: 250px;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            #textArea {
+                min-height: 200px;
+            }
+        }
+
         .file-item {
             background-color: #f8f9fa;
             padding: 10px 15px;
@@ -434,37 +501,41 @@
                 <div id="alertContainer"></div>
 
                 <!-- Privacy Assurance Message -->
-                <div class="alert alert-success d-flex align-items-center mb-4" style="border: 2px solid #28a745; background-color: #d4edda;">
-                    <i class="bi bi-shield-check" style="font-size: 20px; color: #28a745; margin-right: 12px;"></i>
+                <div class="alert alert-success d-flex align-items-center mb-3" style="border: 2px solid #28a745; background-color: #d4edda;">
+                    <i class="bi bi-shield-check" style="font-size: 18px; color: #28a745; margin-right: 12px; flex-shrink: 0;"></i>
                     <div>
-                        <strong>Your Privacy is Protected</strong>
+                        <strong style="font-size: 14px;">Your Privacy is Protected</strong>
                         <br>
                         <small>All file uploads and text content are processed entirely in your browser. Nothing is stored on our servers or transmitted to third parties. Your data is completely private and never misused.</small>
                     </div>
                 </div>
 
-                <!-- File Upload Section -->
-                <div>
-                    <label class="form-label">Upload File (TXT or HTML)</label>
-                    <div class="drop-zone" id="dropZone">
-                        <i class="bi bi-cloud-arrow-up"></i>
-                        <p class="mb-2"><strong>Drag and drop your file here</strong></p>
-                        <p class="text-muted mb-0">or click to browse (TXT, HTML)</p>
+                <!-- File Upload and Text Area Sections -->
+                <div class="input-sections-container">
+                    <!-- File Upload Section -->
+                    <div class="input-section">
+                        <label class="form-label">Upload File (TXT or HTML)</label>
+                        <div class="drop-zone" id="dropZone">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <p class="mb-2"><strong>Drag and drop your file here</strong></p>
+                            <p class="text-muted mb-0">or click to browse (TXT, HTML)</p>
+                        </div>
+                        <input type="file" id="fileInput" class="file-input" accept=".txt,.html">
+                        <div id="fileList"></div>
                     </div>
-                    <input type="file" id="fileInput" class="file-input" accept=".txt,.html">
-                    <div id="fileList"></div>
+
+                    <!-- Or Text Area Section -->
+                    <div class="input-section">
+                        <label for="textArea" class="form-label">Paste Text or HTML</label>
+                        <textarea class="form-control" id="textArea" rows="6" placeholder="Paste your text or HTML content here..."></textarea>
+                    </div>
                 </div>
 
-                <!-- Or Text Area Section -->
+                <!-- Or Divider (Mobile Only) -->
                 <div class="divider"><span>OR</span></div>
 
-                <div>
-                    <label for="textArea" class="form-label">Paste Text or HTML</label>
-                    <textarea class="form-control" id="textArea" rows="8" placeholder="Paste your text or HTML content here..."></textarea>
-                </div>
-
                 <!-- Format Detection -->
-                <div class="mt-4">
+                <div class="mt-2 mb-3">
                     <label class="form-label">Content Type</label>
                     <div class="alert alert-info p-2 mb-0">
                         <small><i class="bi bi-info-circle"></i> <span id="formatDetected">Plain Text</span> (auto-detected)</small>
@@ -472,13 +543,13 @@
                 </div>
 
                 <!-- PDF Options -->
-                <div class="mt-4">
+                <div class="mb-3">
                     <label for="pdfTitle" class="form-label">PDF Title (Optional)</label>
                     <input type="text" class="form-control" id="pdfTitle" placeholder="Enter PDF title...">
                 </div>
 
                 <!-- Buttons -->
-                <div class="mt-4 d-flex gap-2">
+                <div class="d-flex gap-2">
                     <button class="btn btn-primary flex-grow-1" id="convertBtn">
                         <i class="bi bi-download"></i> Convert to PDF
                     </button>
