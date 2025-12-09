@@ -500,16 +500,13 @@
     </button>
 
     <!-- Top Advertisement -->
-    <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999;">
+    <div style="text-align: center; margin: 15px auto; min-height: 90px; width: 100%;">
         <ins class="adsbygoogle"
-             style="display:block"
+             style="display:inline-block; width:728px; height:90px; max-width:100%;"
              data-ad-client="ca-pub-3379746510244069"
-             data-ad-slot="9604771422"
+             data-ad-slot="9953420753"
              data-ad-format="horizontal"
              data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
     </div>
 
     <div class="main-container" style="margin-top: 20px;">
@@ -585,23 +582,27 @@
     </div>
 
     <!-- Bottom Advertisement -->
-    <div style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999;">
+    <div style="text-align: center; margin: 15px auto; min-height: 90px; width: 100%;">
         <ins class="adsbygoogle"
-             style="display:block"
+             style="display:inline-block; width:728px; height:90px; max-width:100%;"
              data-ad-client="ca-pub-3379746510244069"
-             data-ad-slot="9604771422"
+             data-ad-slot="9953420753"
              data-ad-format="horizontal"
              data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-   
+    
     <script>
+        // Reinitialize AdSense ads after page loads
+        window.addEventListener('load', function() {
+            if (window.adsbygoogle) {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }
+        });
+    </script>
         // Dark Mode Toggle
         const themeToggle = document.getElementById('themeToggle');
         const htmlElement = document.documentElement;
