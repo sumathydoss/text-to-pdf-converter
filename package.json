@@ -6,6 +6,9 @@
     "scripts": {
         "start": "open index.html || xdg-open index.html || start index.html"
     },
+    "dependencies": {
+        "@octokit/rest": "^19.0.0"
+    },
     "keywords": [
         "pdf",
         "converter",
