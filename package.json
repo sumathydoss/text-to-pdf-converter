@@ -1,0 +1,22 @@
+{
+    "name": "text-to-pdf-converter",
+    "version": "1.0.0",
+    "description": "Fast and modern web-based tool to convert text and HTML to PDF with dark mode support",
+    "main": "index.html",
+    "scripts": {
+        "start": "open index.html || xdg-open index.html || start index.html"
+    },
+    "keywords": [
+        "pdf",
+        "converter",
+        "text-to-pdf",
+        "html-to-pdf",
+        "web-tool"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/text-to-pdf-converter"
+    }
+}
