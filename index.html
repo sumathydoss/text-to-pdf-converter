@@ -800,19 +800,10 @@
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(11);
 
-            // Add title
-            if (title) {
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.text(title, margin, margin);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(11);
-            }
-
             // Split text into lines
             const lines = doc.splitTextToSize(text, maxWidth);
 
-            let yPosition = title ? margin + 15 : margin;
+            let yPosition = margin;
 
             lines.forEach((line) => {
                 if (yPosition > pageHeight - margin) {
