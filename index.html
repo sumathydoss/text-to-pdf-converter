@@ -883,13 +883,66 @@
                    /<iframe/i.test(html);
         }
 
-        // Enhanced HTML to PDF conversion with better JavaScript support
+        // Extract and render JavaScript data as static HTML
+        async function extractAndRenderData(html) {
+            // Try to extract the messages variable from script tags
+            const messagesMatch = html.match(/const\s+messages\s*=\s*(\[[\s\S]*?\]);/);
+            
+            if (messagesMatch) {
+                try {
+                    // Parse the messages array
+                    const messages = eval(messagesMatch[1]);
+                    
+                    // Create static HTML from messages
+                    let staticContent = '<div style="font-family: Arial, sans-serif; padding: 20px; background: white;">';
+                    staticContent += '<h2>Chat Transcript</h2>';
+                    
+                    messages.forEach(msg => {
+                        // Skip control messages and system messages
+                        if (msg.isControlMessage || (msg.tags && msg.tags.includes('system'))) {
+                            return;
+                        }
+                        
+                        const displayName = msg.from?.user?.displayName || msg.from?.application?.displayName || 'User';
+                        const content = msg.content || '';
+                        const timestamp = msg.created ? new Date(msg.created).toLocaleString() : '';
+                        
+                        if (content) {
+                            staticContent += `<div style="margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 8px;">`;
+                            staticContent += `<strong>${displayName}</strong> <span style="color: #999; font-size: 0.9em;">${timestamp}</span>`;
+                            staticContent += `<p style="margin: 8px 0 0 0;">${content}</p>`;
+                            staticContent += `</div>`;
+                        }
+                    });
+                    
+                    staticContent += '</div>';
+                    return staticContent;
+                } catch (e) {
+                    console.warn('Could not extract messages:', e);
+                    return null;
+                }
+            }
+            
+            return null;
+        }
+
+        // Enhanced HTML to PDF conversion with data extraction
         async function convertHTMLToCanvasPDF(html, title) {
             const { jsPDF } = window.jspdf;
 
+            let htmlToConvert = html;
+            
+            // Try to extract and render data from JavaScript
+            const staticHtml = await extractAndRenderData(html);
+            if (staticHtml) {
+                console.log('Using extracted static HTML');
+                htmlToConvert = staticHtml;
+                showAlert('Rendering chat transcript from data...', 'info');
+            }
+
             // Create a temporary container
             const container = document.createElement('div');
-            container.innerHTML = html;
+            container.innerHTML = htmlToConvert;
             container.style.position = 'absolute';
             container.style.left = '-9999px';
             container.style.top = '0';
@@ -925,8 +978,8 @@
                 });
             }));
 
-            // Extended wait for JavaScript to render (especially for React/Vue apps)
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Wait for rendering
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             try {
                 // Use html2canvas with optimized settings
@@ -946,6 +999,10 @@
                         }
                     }
                 });
+
+                if (canvas.width === 0 || canvas.height === 0) {
+                    throw new Error('Canvas rendering resulted in empty image');
+                }
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const pdf = new jsPDF({
@@ -984,7 +1041,6 @@
 
         async function convertHTMLToPDF(html, title) {
             // Use client-side conversion for all HTML
-            // JavaScript has extended time to render (2 seconds)
             await convertHTMLToCanvasPDF(html, title);
         }
 
