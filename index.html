@@ -999,12 +999,22 @@
             // Remove noscript tags
             temp.querySelectorAll('noscript').forEach(el => el.remove());
 
-            // CRITICAL: Remove ALL iframes that reference file bundles
+            // CRITICAL: Remove ALL iframes that reference file bundles FIRST
+            // This prevents any loading attempts before we get to html2canvas
             temp.querySelectorAll('iframe').forEach(iframe => {
                 const src = iframe.getAttribute('src') || '';
                 if (src.includes('_files') || src.includes('%20_files') || src === '') {
-                    // Remove entire iframe to prevent any loading attempts
                     iframe.remove();
+                }
+            });
+
+            // CRITICAL: REMOVE (not replace) images from file bundles to prevent ANY loading
+            // Setting src triggers loading - removing the element is the only way to stop it
+            temp.querySelectorAll('img').forEach(img => {
+                const src = img.getAttribute('src') || '';
+                // If the src references a local file bundle directory, REMOVE the entire element
+                if (src.includes('_files') || src.includes('%20_files')) {
+                    img.remove();
                 }
             });
 
@@ -1021,20 +1031,7 @@
                 }
             });
 
-            // Replace image src attributes that point to file bundles with a 1x1 placeholder
-            // This prevents 404 requests while keeping the element structure
-            temp.querySelectorAll('img').forEach(img => {
-                const src = img.getAttribute('src') || '';
-                // If the src references a local file bundle directory
-                if (src.includes('_files') || src.includes('%20_files')) {
-                    // Replace with a transparent 1x1 pixel to prevent requests
-                    img.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
-                    img.style.display = 'none';
-                }
-            });
-
             // Remove link tags that try to load external CSS from file bundles
-            // BUT keep the structure for other link tags
             temp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
                 const href = link.getAttribute('href') || '';
                 // Only remove if it references file bundle
@@ -1336,27 +1333,26 @@
             // Wait for styling to be applied (short delay only)
             await new Promise(resolve => setTimeout(resolve, 300));
 
+            // Block all network requests during html2canvas rendering to prevent console errors
+            const originalFetch = window.fetch;
+            const originalOpen = window.XMLHttpRequest.prototype.open;
+            
+            let requestsBlocked = true;
+            
+            window.fetch = () => {
+                return Promise.reject(new Error('Network blocked during PDF conversion'));
+            };
+            
+            window.XMLHttpRequest.prototype.open = function(method, url) {
+                if (requestsBlocked) {
+                    this.abort();
+                }
+                return this;
+            };
+
             try {
                 // Enable console warning suppression during PDF conversion
                 window.suppressDOMWarnings = true;
-                
-                // Block all network requests during html2canvas rendering to prevent console errors
-                const originalFetch = window.fetch;
-                const originalOpen = window.XMLHttpRequest.prototype.open;
-                
-                let requestsBlocked = true;
-                
-                window.fetch = () => {
-                    return Promise.reject(new Error('Network blocked during PDF conversion'));
-                };
-                
-                window.XMLHttpRequest.prototype.open = function(method, url) {
-                    if (requestsBlocked) {
-                        // Silently fail XHR requests
-                        this.abort();
-                    }
-                    return this;
-                };
 
                 // Use html2canvas with optimized settings for complex HTML
                 const canvas = await html2canvas(container, {
