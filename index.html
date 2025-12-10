@@ -1337,6 +1337,27 @@
             await new Promise(resolve => setTimeout(resolve, 300));
 
             try {
+                // Enable console warning suppression during PDF conversion
+                window.suppressDOMWarnings = true;
+                
+                // Block all network requests during html2canvas rendering to prevent console errors
+                const originalFetch = window.fetch;
+                const originalOpen = window.XMLHttpRequest.prototype.open;
+                
+                let requestsBlocked = true;
+                
+                window.fetch = () => {
+                    return Promise.reject(new Error('Network blocked during PDF conversion'));
+                };
+                
+                window.XMLHttpRequest.prototype.open = function(method, url) {
+                    if (requestsBlocked) {
+                        // Silently fail XHR requests
+                        this.abort();
+                    }
+                    return this;
+                };
+
                 // Use html2canvas with optimized settings for complex HTML
                 const canvas = await html2canvas(container, {
                     scale: 2,
@@ -1417,6 +1438,14 @@
                 showAlert(`Failed to convert HTML: ${errorMsg}`, 'danger');
                 throw new Error(`HTML to PDF conversion failed: ${errorMsg}`);
             } finally {
+                // Disable console warning suppression
+                window.suppressDOMWarnings = false;
+                
+                // Restore original fetch and XHR
+                requestsBlocked = false;
+                window.fetch = originalFetch;
+                window.XMLHttpRequest.prototype.open = originalOpen;
+                
                 document.body.removeChild(container);
             }
         }
@@ -1434,6 +1463,30 @@
             window.detectedFormat = 'text';
             clearFile();
         });
+
+        // Suppress [DOM] duplicate ID warnings during PDF conversion
+        // These warnings come from the uploaded HTML and are not critical
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        window.suppressDOMWarnings = false;
+        
+        console.warn = function(...args) {
+            // Suppress [DOM] warnings about duplicate IDs during conversion
+            if (window.suppressDOMWarnings && args[0] && args[0].includes && args[0].includes('[DOM]')) {
+                return;
+            }
+            return originalWarn.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            // Suppress 404 errors from html2canvas and fetch attempts during conversion
+            if (window.suppressDOMWarnings && args[0] && args[0].includes && 
+                (args[0].includes('404') || args[0].includes('ERR_') || args[0].includes('net::'))) {
+                return;
+            }
+            return originalError.apply(console, args);
+        };
     </script>
 </body>
 </html>
