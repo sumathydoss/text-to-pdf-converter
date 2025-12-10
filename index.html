@@ -680,8 +680,15 @@
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
             alertDiv.innerHTML = `
                 ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" aria-label="Close"></button>
             `;
+            
+            // Add click handler to close button
+            const closeBtn = alertDiv.querySelector('.btn-close');
+            closeBtn.addEventListener('click', () => {
+                alertDiv.remove();
+            });
+            
             alertContainer.appendChild(alertDiv);
 
             if (autoHide) {
@@ -1459,7 +1466,7 @@
                 const pageCount = Math.ceil(imgHeight / (pageHeight - 2 * margin));
                 pdf.save(title + '.pdf');
                 console.log('✓ PDF generated successfully with', pageCount, 'page(s)');
-                showAlert(`PDF created successfully (${pageCount} page${pageCount > 1 ? 's' : ''})`, 'success');
+                //showAlert(`PDF created successfully (${pageCount} page${pageCount > 1 ? 's' : ''})`, 'success');
             } catch (error) {
                 console.error('PDF conversion error:', error);
                 const errorMsg = error.message || 'Unknown error';
