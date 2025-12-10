@@ -1,6 +1,7 @@
 {
     "name": "text-to-pdf-converter",
     "version": "1.0.0",
+    "type": "module",
     "description": "Fast and modern web-based tool to convert text and HTML to PDF with dark mode support",
     "main": "index.html",
     "scripts": {
