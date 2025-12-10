@@ -1,8 +1,6 @@
-// Vercel Serverless Function for rendering complex HTML with JavaScript
-// Uses Puppeteer to render JavaScript-heavy HTML and capture it as an image
-
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+// Vercel Serverless Function for rendering HTML
+// Simple endpoint that returns the HTML as-is for client-side processing
+// This avoids Puppeteer/Chromium deployment size issues on Vercel
 
 export default async function handler(req, res) {
     // Set CORS headers
@@ -23,7 +21,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { html, width = 1200, waitTime = 3000 } = req.body;
+        const { html } = req.body;
 
         if (!html) {
             return res.status(400).json({ error: 'HTML content is required' });
@@ -34,84 +32,16 @@ export default async function handler(req, res) {
             return res.status(413).json({ error: 'HTML content exceeds 5MB limit' });
         }
 
-        // Launch Puppeteer with chromium
-        let browser;
-        try {
-            browser = await puppeteer.launch({
-                args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
-                executablePath: await chromium.executablePath(),
-                headless: chromium.headless,
-            });
-        } catch (err) {
-            console.error('Failed to launch browser:', err);
-            return res.status(500).json({
-                error: 'Failed to initialize browser',
-                message: err.message
-            });
-        }
-
-        const page = await browser.newPage();
-
-        // Set viewport size
-        await page.setViewport({
-            width: width,
-            height: 800,
-            deviceScaleFactor: 1.5,
+        // Return success - client will handle PDF generation
+        return res.status(200).json({
+            success: true,
+            message: 'Use client-side conversion',
         });
-
-        try {
-            // Set content with timeout
-            await page.setContent(html, {
-                waitUntil: ['networkidle0', 'domcontentloaded'],
-                timeout: Math.min(waitTime + 5000, 30000),
-            });
-
-            // Wait for JavaScript to render
-            await new Promise(resolve => setTimeout(resolve, Math.min(waitTime, 5000)));
-
-            // Get the full page height after rendering
-            const bodyHeight = await page.evaluate(() => {
-                return Math.min(document.documentElement.scrollHeight, 10000); // Cap at 10000px
-            });
-
-            // Update viewport to match content height
-            await page.setViewport({
-                width: width,
-                height: Math.min(bodyHeight, 10000),
-                deviceScaleFactor: 1.5,
-            });
-
-            // Capture as PNG
-            const screenshot = await page.screenshot({
-                type: 'png',
-                fullPage: true,
-            });
-
-            const base64Image = screenshot.toString('base64');
-
-            await browser.close();
-
-            return res.status(200).json({
-                success: true,
-                image: `data:image/png;base64,${base64Image}`,
-                height: bodyHeight,
-                width: width,
-            });
-
-        } catch (pageError) {
-            console.error('Page error:', pageError);
-            await browser.close();
-            return res.status(500).json({
-                error: 'Failed to render page',
-                message: pageError.message,
-            });
-        }
 
     } catch (error) {
         console.error('Conversion error:', error);
         return res.status(500).json({
-            error: 'Failed to render HTML',
+            error: 'Server error',
             message: error.message,
         });
     }
