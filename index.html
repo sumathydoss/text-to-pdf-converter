@@ -1016,6 +1016,20 @@
                 if (src.includes('_files') || src.includes('%20_files')) {
                     img.remove();
                 }
+                // Also remove images with relative paths that would cause 404s
+                // These are from converted HTML files with bundled resources
+                else if (src.startsWith('http') && !src.startsWith('data:')) {
+                    // Only keep images that are data URIs or absolute URLs we can load
+                    if (!src.includes('text-to-pdf-converter') && !src.includes('vercel.app')) {
+                        // External image from original HTML - try to keep if accessible
+                    } else {
+                        // Relative path that got converted to deployment URL - remove it
+                        img.remove();
+                    }
+                } else if (src && !src.startsWith('data:') && !src.startsWith('http')) {
+                    // Remove relative paths that would fail
+                    img.remove();
+                }
             });
 
             // CRITICAL: Remove ALL links/anchors/elements that reference file bundle files
@@ -1143,6 +1157,16 @@
                     .replace(/display\s*:\s*none\s*!?;?/gi, 'display: block;')
                     .replace(/visibility\s*:\s*hidden\s*!?;?/gi, 'visibility: visible;');
                 el.setAttribute('style', cleanStyle);
+            });
+
+            // Add error handlers to suppress 404 errors for any remaining external resources
+            temp.querySelectorAll('img').forEach(img => {
+                img.onerror = function() { 
+                    // Silently fail - don't show broken image icon
+                    this.style.display = 'none';
+                };
+                // Prevent loading errors for cross-origin images
+                img.setAttribute('crossorigin', 'anonymous');
             });
 
             return temp.innerHTML;
