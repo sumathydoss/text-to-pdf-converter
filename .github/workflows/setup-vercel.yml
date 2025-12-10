@@ -12,10 +12,6 @@ jobs:
       
       - name: Install Vercel CLI
         run: npm install -g vercel
-      
-      - name: Set GitHub Token in Vercel
-        run: |
-          vercel env add GITHUB_TOKEN "${{ secrets.GITHUB_TOKEN }}" --yes --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
