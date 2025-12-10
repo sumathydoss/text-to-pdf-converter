@@ -876,14 +876,32 @@
             doc.save(title + '.pdf');
         }
 
-        // Helper function to detect if HTML contains JavaScript or external scripts
-        function hasComplexHTML(html) {
-            return /<script[^>]*>(.*?)<\/script>/i.test(html) ||
-                   /on\w+\s*=/i.test(html) ||
-                   /<iframe/i.test(html);
+        // Extract CSS from HTML and inject it into container
+        function extractAndApplyStyles(html, container) {
+            // Extract all style tags
+            const styleMatches = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) || [];
+            
+            styleMatches.forEach(styleTag => {
+                const styleContent = styleTag.replace(/<\/?style[^>]*>/gi, '');
+                const style = document.createElement('style');
+                style.textContent = styleContent;
+                container.appendChild(style);
+            });
+
+            // Also extract link stylesheets if any
+            const linkMatches = html.match(/<link[^>]*rel=["\']?stylesheet["\']?[^>]*>/gi) || [];
+            linkMatches.forEach(linkTag => {
+                const hrefMatch = linkTag.match(/href=["\']?([^"\'\s>]+)["\']?/);
+                if (hrefMatch && hrefMatch[1]) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = hrefMatch[1];
+                    container.appendChild(link);
+                }
+            });
         }
 
-        // Extract and render JavaScript data as static HTML
+        // Extract and render JavaScript data as static HTML with better styling
         async function extractAndRenderData(html) {
             // Try to extract the messages variable from script tags
             const messagesMatch = html.match(/const\s+messages\s*=\s*(\[[\s\S]*?\]);/);
@@ -893,9 +911,54 @@
                     // Parse the messages array
                     const messages = eval(messagesMatch[1]);
                     
-                    // Create static HTML from messages
-                    let staticContent = '<div style="font-family: Arial, sans-serif; padding: 20px; background: white;">';
-                    staticContent += '<h2>Chat Transcript</h2>';
+                    // Create styled HTML from messages
+                    let staticContent = `
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: #f7f7f9; }
+                            .transcript { max-width: 900px; margin: 0 auto; }
+                            h1 { color: #333; margin-bottom: 20px; font-size: 24px; }
+                            .message { 
+                                margin-bottom: 12px; 
+                                padding: 12px 15px; 
+                                border-radius: 8px; 
+                                word-wrap: break-word;
+                            }
+                            .message.bot {
+                                background: rgb(116, 39, 116);
+                                color: white;
+                                margin-right: 40px;
+                            }
+                            .message.user {
+                                background: white;
+                                color: #000;
+                                margin-left: 40px;
+                                border: 1px solid #ddd;
+                            }
+                            .message-header {
+                                font-weight: 700;
+                                font-size: 12px;
+                                margin-bottom: 4px;
+                                opacity: 0.9;
+                            }
+                            .message-time {
+                                font-size: 10px;
+                                opacity: 0.7;
+                                margin-top: 4px;
+                            }
+                            .message-content {
+                                font-size: 13px;
+                                line-height: 1.4;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="transcript">
+                            <h1>Chat Transcript</h1>
+                    `;
                     
                     messages.forEach(msg => {
                         // Skip control messages and system messages
@@ -905,17 +968,28 @@
                         
                         const displayName = msg.from?.user?.displayName || msg.from?.application?.displayName || 'User';
                         const content = msg.content || '';
-                        const timestamp = msg.created ? new Date(msg.created).toLocaleString() : '';
+                        const timestamp = msg.created ? new Date(msg.created).toLocaleTimeString("en-us", { year: "numeric", month:"numeric", day:"numeric", hour: "2-digit", minute: "2-digit"}) : '';
+                        
+                        // Determine if it's a bot or user message
+                        const isBot = msg.from?.user ? true : false;
+                        const messageClass = isBot ? 'bot' : 'user';
                         
                         if (content) {
-                            staticContent += `<div style="margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 8px;">`;
-                            staticContent += `<strong>${displayName}</strong> <span style="color: #999; font-size: 0.9em;">${timestamp}</span>`;
-                            staticContent += `<p style="margin: 8px 0 0 0;">${content}</p>`;
-                            staticContent += `</div>`;
+                            staticContent += `
+                            <div class="message ${messageClass}">
+                                <div class="message-header">${displayName}</div>
+                                <div class="message-content">${content}</div>
+                                <div class="message-time">${timestamp}</div>
+                            </div>
+                            `;
                         }
                     });
                     
-                    staticContent += '</div>';
+                    staticContent += `
+                        </div>
+                    </body>
+                    </html>
+                    `;
                     return staticContent;
                 } catch (e) {
                     console.warn('Could not extract messages:', e);
@@ -926,7 +1000,7 @@
             return null;
         }
 
-        // Enhanced HTML to PDF conversion with data extraction
+        // Enhanced HTML to PDF conversion with full styling support
         async function convertHTMLToCanvasPDF(html, title) {
             const { jsPDF } = window.jspdf;
 
@@ -935,36 +1009,52 @@
             // Try to extract and render data from JavaScript
             const staticHtml = await extractAndRenderData(html);
             if (staticHtml) {
-                console.log('Using extracted static HTML');
+                console.log('Using extracted static HTML with styling');
                 htmlToConvert = staticHtml;
                 showAlert('Rendering chat transcript from data...', 'info');
             }
 
-            // Create a temporary container
+            // Create a temporary container with full HTML structure
             const container = document.createElement('div');
-            container.innerHTML = htmlToConvert;
+            
+            // If it's a full HTML document, use it as-is
+            if (htmlToConvert.toLowerCase().includes('</html>')) {
+                container.innerHTML = htmlToConvert;
+            } else {
+                // Otherwise wrap it
+                container.innerHTML = `
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { font-family: Arial, sans-serif; padding: 20px; background: white; }
+                        </style>
+                    </head>
+                    <body>${htmlToConvert}</body>
+                    </html>
+                `;
+            }
+            
             container.style.position = 'absolute';
             container.style.left = '-9999px';
             container.style.top = '0';
-            container.style.padding = '20px';
-            container.style.fontFamily = 'Arial, sans-serif';
-            container.style.fontSize = '11px';
-            container.style.lineHeight = '1.4';
-            container.style.color = '#000';
-            container.style.backgroundColor = '#fff';
-            container.style.maxWidth = 'none';
+            container.style.display = 'block';
             document.body.appendChild(container);
 
-            // Set reasonable width
-            container.style.width = '1200px';
-            
-            // Wait for reflow
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            // Get actual content width
-            const contentWidth = Math.min(container.scrollWidth, 1200);
-            container.style.width = contentWidth + 'px';
+            // Extract styles from original HTML
+            extractAndApplyStyles(html, container);
 
+            // Get the body element to measure
+            const bodyElement = container.querySelector('body') || container;
+            bodyElement.style.width = '1200px';
+            bodyElement.style.margin = '0';
+            bodyElement.style.padding = '20px';
+            bodyElement.style.backgroundColor = '#fff';
+            
+            // Wait for reflow and style application
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
             // Ensure all images are loaded
             const images = container.querySelectorAll('img');
             await Promise.all(Array.from(images).map(img => {
@@ -978,24 +1068,25 @@
                 });
             }));
 
-            // Wait for rendering
+            // Wait for styling to be applied
             await new Promise(resolve => setTimeout(resolve, 500));
 
             try {
                 // Use html2canvas with optimized settings
                 const canvas = await html2canvas(container, {
-                    scale: 1.5,
+                    scale: 2,
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: '#ffffff',
                     logging: false,
-                    windowHeight: container.scrollHeight,
-                    windowWidth: container.scrollWidth,
+                    windowWidth: 1200,
+                    windowHeight: bodyElement.scrollHeight,
                     onclone: (clonedDocument) => {
-                        const clonedContainer = clonedDocument.querySelector('div');
-                        if (clonedContainer) {
-                            clonedContainer.style.margin = '0';
-                            clonedContainer.style.padding = '20px';
+                        const clonedBody = clonedDocument.querySelector('body');
+                        if (clonedBody) {
+                            clonedBody.style.margin = '0';
+                            clonedBody.style.padding = '20px';
+                            clonedBody.style.width = '1200px';
                         }
                     }
                 });
@@ -1004,7 +1095,7 @@
                     throw new Error('Canvas rendering resulted in empty image');
                 }
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const imgData = canvas.toDataURL('image/png', 0.95);
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
@@ -1020,13 +1111,13 @@
                 let heightLeft = imgHeight;
                 let position = margin;
 
-                pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                 heightLeft -= (pageHeight - 2 * margin);
 
                 while (heightLeft > 0) {
                     position = heightLeft - imgHeight;
                     pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                    pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                     heightLeft -= (pageHeight - 2 * margin);
                 }
 
