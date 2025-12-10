@@ -990,6 +990,23 @@
 
         // Sanitize HTML to remove problematic elements and external dependencies
         function sanitizeHTMLForPDF(html) {
+            // CRITICAL: Do string replacement FIRST before parsing as DOM
+            // This prevents the browser from trying to load images during innerHTML assignment
+            
+            // Remove all src attributes from img tags to prevent 404 errors
+            // This stops the browser from attempting to fetch non-existent resources
+            html = html.replace(/<img\s+([^>]*\s)?src="[^"]*"([^>]*)>/gi, (match, before, after) => {
+                // Keep the img tag but remove the src attribute
+                const attributes = (before || '') + (after || '');
+                return `<img ${attributes.trim()}>`;
+            });
+            
+            // Also handle single-quoted src attributes
+            html = html.replace(/<img\s+([^>]*\s)?src='[^']*'([^>]*)>/gi, (match, before, after) => {
+                const attributes = (before || '') + (after || '');
+                return `<img ${attributes.trim()}>`;
+            });
+
             const temp = document.createElement('div');
             temp.innerHTML = html;
 
@@ -1005,30 +1022,6 @@
                 const src = iframe.getAttribute('src') || '';
                 if (src.includes('_files') || src.includes('%20_files') || src === '') {
                     iframe.remove();
-                }
-            });
-
-            // CRITICAL: REMOVE (not replace) images from file bundles to prevent ANY loading
-            // Setting src triggers loading - removing the element is the only way to stop it
-            temp.querySelectorAll('img').forEach(img => {
-                const src = img.getAttribute('src') || '';
-                // If the src references a local file bundle directory, REMOVE the entire element
-                if (src.includes('_files') || src.includes('%20_files')) {
-                    img.remove();
-                }
-                // Also remove images with relative paths that would cause 404s
-                // These are from converted HTML files with bundled resources
-                else if (src.startsWith('http') && !src.startsWith('data:')) {
-                    // Only keep images that are data URIs or absolute URLs we can load
-                    if (!src.includes('text-to-pdf-converter') && !src.includes('vercel.app')) {
-                        // External image from original HTML - try to keep if accessible
-                    } else {
-                        // Relative path that got converted to deployment URL - remove it
-                        img.remove();
-                    }
-                } else if (src && !src.startsWith('data:') && !src.startsWith('http')) {
-                    // Remove relative paths that would fail
-                    img.remove();
                 }
             });
 
@@ -1157,16 +1150,6 @@
                     .replace(/display\s*:\s*none\s*!?;?/gi, 'display: block;')
                     .replace(/visibility\s*:\s*hidden\s*!?;?/gi, 'visibility: visible;');
                 el.setAttribute('style', cleanStyle);
-            });
-
-            // Add error handlers to suppress 404 errors for any remaining external resources
-            temp.querySelectorAll('img').forEach(img => {
-                img.onerror = function() { 
-                    // Silently fail - don't show broken image icon
-                    this.style.display = 'none';
-                };
-                // Prevent loading errors for cross-origin images
-                img.setAttribute('crossorigin', 'anonymous');
             });
 
             return temp.innerHTML;
