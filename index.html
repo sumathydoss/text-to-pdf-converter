@@ -999,6 +999,17 @@
             // Remove noscript tags
             temp.querySelectorAll('noscript').forEach(el => el.remove());
 
+            // CRITICAL: Remove or neutralize images from local file bundles BEFORE html2canvas tries to load them
+            // This prevents all those 404 errors
+            temp.querySelectorAll('img').forEach(img => {
+                const src = img.getAttribute('src') || '';
+                // If the src references a local file bundle directory
+                if (src.includes('_files/') || src.includes('%20_files') || src.includes('_files%2F') || src.includes('_files')) {
+                    // Remove the entire image element to prevent any loading attempt
+                    img.remove();
+                }
+            });
+
             // Handle iframes - try to extract visible content, fall back to placeholder only for external embeds
             temp.querySelectorAll('iframe').forEach(el => {
                 // Keep the iframe element - html2canvas may be able to render it
