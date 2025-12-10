@@ -999,38 +999,25 @@
             // Remove noscript tags
             temp.querySelectorAll('noscript').forEach(el => el.remove());
 
-            // CRITICAL: Remove ALL link tags that reference external stylesheets from file bundles
-            // This prevents html2canvas from trying to fetch non-existent CSS files
-            temp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-                const href = link.getAttribute('href') || '';
-                // Remove if it's from a local file bundle or relative path
-                if (href.includes('_files') || href.includes('%20_files') || 
-                    (href.includes('/') && !href.startsWith('http') && !href.startsWith('//'))) {
-                    link.remove();
-                }
-            });
-
-            // CRITICAL: Remove or neutralize images from local file bundles BEFORE html2canvas tries to load them
-            // This prevents all those 404 errors
+            // Replace image src attributes that point to file bundles with a 1x1 placeholder
+            // This prevents 404 requests while keeping the element structure
             temp.querySelectorAll('img').forEach(img => {
                 const src = img.getAttribute('src') || '';
                 // If the src references a local file bundle directory
-                if (src.includes('_files/') || src.includes('%20_files') || src.includes('_files%2F') || src.includes('_files')) {
-                    // Remove the entire image element to prevent any loading attempt
-                    img.remove();
+                if (src.includes('_files') || src.includes('%20_files')) {
+                    // Replace with a transparent 1x1 pixel to prevent requests
+                    img.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+                    img.style.display = 'none';
                 }
             });
 
-            // Remove any HTML file references that might be in src attributes or links
-            temp.querySelectorAll('[href], [src]').forEach(el => {
-                const href = el.getAttribute('href') || '';
-                const src = el.getAttribute('src') || '';
-                
-                // Remove references to .html, .htm files from file bundles
-                if ((href.endsWith('.html') || href.endsWith('.htm') || 
-                     src.endsWith('.html') || src.endsWith('.html')) &&
-                    (href.includes('_files') || src.includes('_files'))) {
-                    el.remove();
+            // Remove link tags that try to load external CSS from file bundles
+            // BUT keep the structure for other link tags
+            temp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                const href = link.getAttribute('href') || '';
+                // Only remove if it references file bundle
+                if (href.includes('_files') || href.includes('%20_files')) {
+                    link.remove();
                 }
             });
 
@@ -1324,40 +1311,8 @@
             bodyElement.style.padding = '20px';
             bodyElement.style.backgroundColor = '#fff';
             
-            // Wait for stylesheets to load with timeout
-            await waitForStylesheets(container, 5000);
-            
-            // Wait for reflow and style application
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Ensure all images are loaded with timeout
-            const images = container.querySelectorAll('img');
-            const imageLoadPromises = Array.from(images).map(img => {
-                return new Promise((resolve) => {
-                    const timer = setTimeout(resolve, 3000); // 3 second timeout per image
-                    const cleanup = () => {
-                        clearTimeout(timer);
-                        resolve();
-                    };
-                    
-                    if (img.complete) {
-                        resolve();
-                    } else {
-                        img.onload = cleanup;
-                        img.onerror = cleanup;
-                    }
-                });
-            });
-
-            if (imageLoadPromises.length > 0) {
-                await Promise.race([
-                    Promise.all(imageLoadPromises),
-                    new Promise(resolve => setTimeout(resolve, 5000)) // Overall 5 second limit
-                ]);
-            }
-
-            // Wait for styling to be applied
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Wait for styling to be applied (short delay only)
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             try {
                 // Use html2canvas with optimized settings for complex HTML
@@ -1369,29 +1324,31 @@
                     logging: false,
                     windowWidth: 1200,
                     windowHeight: Math.max(bodyElement.scrollHeight, 1000), // Ensure minimum height
-                    timeout: 10000, // Reduced timeout to 10 seconds
-                    imageTimeout: 500, // Very short timeout for individual images
-                    useForeignObjectMethod: false, // Don't use foreign object method which can cause extra requests
+                    timeout: 5000, // Reduced timeout
+                    imageTimeout: 100, // Very short image timeout
+                    useForeignObjectMethod: false, // Don't use foreign object method
                     onclone: (clonedDocument) => {
                         const clonedBody = clonedDocument.querySelector('body');
                         if (clonedBody) {
                             clonedBody.style.margin = '0';
                             clonedBody.style.padding = '20px';
                             clonedBody.style.width = '1200px';
-                            // Ensure no hidden elements
                             clonedBody.style.display = 'block';
                         }
-                        // Remove scripts from cloned document to prevent issues
-                        const scripts = clonedDocument.querySelectorAll('script');
-                        scripts.forEach(script => script.remove());
+                        // Remove scripts from cloned document
+                        clonedDocument.querySelectorAll('script').forEach(script => script.remove());
                         
-                        // Remove ANY remaining images, links, or external resources
-                        const images = clonedDocument.querySelectorAll('img');
-                        images.forEach(img => img.remove());
-                        
-                        // Remove any remaining external link references
-                        const links = clonedDocument.querySelectorAll('link');
-                        links.forEach(link => link.remove());
+                        // Hide problematic images but keep structure
+                        clonedDocument.querySelectorAll('img').forEach(img => {
+                            const src = img.getAttribute('src') || '';
+                            // Only hide if it's NOT a data URI (meaning it's trying to load a real file)
+                            if (!src.startsWith('data:')) {
+                                img.style.display = 'none';
+                                img.style.visibility = 'hidden';
+                                img.style.width = '0';
+                                img.style.height = '0';
+                            }
+                        });
                     }
                 });
 
