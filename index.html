@@ -999,6 +999,28 @@
             // Remove noscript tags
             temp.querySelectorAll('noscript').forEach(el => el.remove());
 
+            // CRITICAL: Remove ALL iframes that reference file bundles
+            temp.querySelectorAll('iframe').forEach(iframe => {
+                const src = iframe.getAttribute('src') || '';
+                if (src.includes('_files') || src.includes('%20_files') || src === '') {
+                    // Remove entire iframe to prevent any loading attempts
+                    iframe.remove();
+                }
+            });
+
+            // CRITICAL: Remove ALL links/anchors/elements that reference file bundle files
+            temp.querySelectorAll('[href], [src], [data]').forEach(el => {
+                const href = el.getAttribute('href') || '';
+                const src = el.getAttribute('src') || '';
+                const data = el.getAttribute('data') || '';
+                
+                // If ANY attribute references _files, remove the element
+                if (href.includes('_files') || src.includes('_files') || data.includes('_files') ||
+                    href.includes('%20_files') || src.includes('%20_files') || data.includes('%20_files')) {
+                    el.remove();
+                }
+            });
+
             // Replace image src attributes that point to file bundles with a 1x1 placeholder
             // This prevents 404 requests while keeping the element structure
             temp.querySelectorAll('img').forEach(img => {
