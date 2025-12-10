@@ -674,7 +674,7 @@
         });
 
         // Alert Messages
-        function showAlert(message, type = 'info') {
+        function showAlert(message, type = 'info', autoHide = true) {
             const alertContainer = document.getElementById('alertContainer');
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -684,9 +684,11 @@
             `;
             alertContainer.appendChild(alertDiv);
 
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
+            if (autoHide) {
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            }
         }
 
         // Drag and Drop
@@ -854,7 +856,7 @@
                 // Track the conversion
                 trackConversion(format === 'html' ? 'HTML to PDF' : 'Text to PDF');
                 
-               // showAlert('PDF created successfully!', 'success');
+                showAlert('✓ PDF downloaded successfully!', 'success', false);
             } catch (error) {
                 console.error('Error:', error);
                 showAlert('Error creating PDF: ' + error.message, 'danger');
