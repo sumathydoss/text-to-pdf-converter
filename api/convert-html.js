@@ -45,14 +45,14 @@ export default async function handler(req, res) {
             });
         } catch (err) {
             console.error('Failed to launch browser:', err);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Failed to initialize browser',
-                message: err.message 
+                message: err.message
             });
         }
 
         const page = await browser.newPage();
-        
+
         // Set viewport size
         await page.setViewport({
             width: width,
@@ -89,9 +89,9 @@ export default async function handler(req, res) {
             });
 
             const base64Image = screenshot.toString('base64');
-            
+
             await browser.close();
-            
+
             return res.status(200).json({
                 success: true,
                 image: `data:image/png;base64,${base64Image}`,
