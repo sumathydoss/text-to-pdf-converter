@@ -30,8 +30,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23764ba2'/><text x='50' y='65' font-size='80' font-weight='bold' text-anchor='middle' fill='%23ffffff'>📄</text></svg>" type="image/svg+xml">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3379746510244069"
-     crossorigin="anonymous"></script>
     
     <!-- JSON-LD Structured Data for Search Engines -->
     <script type="application/ld+json">
@@ -595,9 +593,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="/analytics.js"></script>
-    
-    <script>
-        // Reinitialize AdSense ads after page loads
+    <script type="module">
+        import { config } from './config.js';
+        window.appConfig = config;
+        
+        // Dynamically load Google AdSense if enabled
+        if (config.ENABLE_ANALYTICS) {
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${config.ADSENSE_PUBLISHER_ID}`;
+            script.crossOrigin = 'anonymous';
+            document.head.appendChild(script);
+        }
+    </script>
         window.addEventListener('load', function() {
             if (window.adsbygoogle) {
                 (adsbygoogle = window.adsbygoogle || []).push({});
@@ -689,9 +697,16 @@
 
             const file = files[0];
             const validTypes = ['text/plain', 'text/html'];
+            const MAX_FILE_SIZE = window.appConfig.MAX_FILE_SIZE;
 
             if (!validTypes.includes(file.type)) {
                 showAlert('Please upload a TXT or HTML file', 'danger');
+                fileInput.value = '';
+                return;
+            }
+
+            if (file.size > MAX_FILE_SIZE) {
+                showAlert(`File size exceeds ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB limit. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.`, 'danger');
                 fileInput.value = '';
                 return;
             }
@@ -752,9 +767,15 @@
             const textContent = document.getElementById('textArea').value.trim();
             const format = window.detectedFormat || 'text';
             const pdfTitle = document.getElementById('pdfTitle').value || 'document';
+            const MAX_TEXT_SIZE = window.appConfig.MAX_TEXT_SIZE;
 
             if (!textContent) {
                 showAlert('Please enter content or upload a file', 'warning');
+                return;
+            }
+
+            if (new Blob([textContent]).size > MAX_TEXT_SIZE) {
+                showAlert(`Content exceeds ${(MAX_TEXT_SIZE / 1024 / 1024).toFixed(0)}MB limit. Your content is ${(new Blob([textContent]).size / 1024 / 1024).toFixed(2)}MB.`, 'warning');
                 return;
             }
 
