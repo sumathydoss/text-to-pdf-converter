@@ -919,6 +919,79 @@
             });
         }
 
+        // Wait for stylesheets to load with timeout
+        async function waitForStylesheets(container, timeout = 10000) {
+            const links = container.querySelectorAll('link[rel="stylesheet"]');
+            if (links.length === 0) return;
+
+            const loadPromises = Array.from(links).map((link) => {
+                return new Promise((resolve) => {
+                    const timer = setTimeout(() => {
+                        console.warn(`Stylesheet timeout: ${link.href}`);
+                        resolve(); // Resolve anyway to not block conversion
+                    }, timeout);
+
+                    const onLoad = () => {
+                        clearTimeout(timer);
+                        resolve();
+                    };
+
+                    link.onload = onLoad;
+                    link.onerror = onLoad; // Resolve on error too
+                });
+            });
+
+            await Promise.race([
+                Promise.all(loadPromises),
+                new Promise(resolve => setTimeout(resolve, timeout))
+            ]);
+        }
+
+        // Sanitize HTML to remove problematic elements and external dependencies
+        function sanitizeHTMLForPDF(html) {
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            // Remove script tags
+            temp.querySelectorAll('script').forEach(el => el.remove());
+
+            // Remove noscript tags
+            temp.querySelectorAll('noscript').forEach(el => el.remove());
+
+            // Remove iframe tags (cannot render in canvas)
+            temp.querySelectorAll('iframe').forEach(el => {
+                const placeholder = document.createElement('div');
+                placeholder.style.border = '1px solid #ccc';
+                placeholder.style.padding = '10px';
+                placeholder.style.backgroundColor = '#f5f5f5';
+                placeholder.textContent = '[Embedded content cannot be rendered in PDF]';
+                el.replaceWith(placeholder);
+            });
+
+            // Remove style attributes that might use external resources
+            temp.querySelectorAll('[style*="background-image"]').forEach(el => {
+                const style = el.getAttribute('style');
+                const cleanStyle = style.replace(/background-image\s*:\s*url\([^)]*\)/gi, '');
+                if (cleanStyle.trim()) {
+                    el.setAttribute('style', cleanStyle);
+                } else {
+                    el.removeAttribute('style');
+                }
+            });
+
+            // Handle video and audio tags
+            temp.querySelectorAll('video, audio').forEach(el => {
+                const placeholder = document.createElement('div');
+                placeholder.style.border = '1px solid #ccc';
+                placeholder.style.padding = '10px';
+                placeholder.style.backgroundColor = '#f5f5f5';
+                placeholder.textContent = `[${el.tagName} content cannot be rendered in PDF]`;
+                el.replaceWith(placeholder);
+            });
+
+            return temp.innerHTML;
+        }
+
         // Extract and render JavaScript data as static HTML with better styling
         async function extractAndRenderData(html) {
             // Try to extract the messages variable from script tags
@@ -1032,6 +1105,9 @@
                 showAlert('Rendering chat transcript from data...', 'info');
             }
 
+            // Sanitize HTML to remove problematic elements
+            htmlToConvert = sanitizeHTMLForPDF(htmlToConvert);
+
             // Create a temporary container with full HTML structure
             const container = document.createElement('div');
             
@@ -1070,47 +1146,69 @@
             bodyElement.style.padding = '20px';
             bodyElement.style.backgroundColor = '#fff';
             
-            // Wait for reflow and style application
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Wait for stylesheets to load with timeout
+            await waitForStylesheets(container, 5000);
             
-            // Ensure all images are loaded
+            // Wait for reflow and style application
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Ensure all images are loaded with timeout
             const images = container.querySelectorAll('img');
-            await Promise.all(Array.from(images).map(img => {
+            const imageLoadPromises = Array.from(images).map(img => {
                 return new Promise((resolve) => {
+                    const timer = setTimeout(resolve, 3000); // 3 second timeout per image
+                    const cleanup = () => {
+                        clearTimeout(timer);
+                        resolve();
+                    };
+                    
                     if (img.complete) {
                         resolve();
                     } else {
-                        img.onload = resolve;
-                        img.onerror = resolve;
+                        img.onload = cleanup;
+                        img.onerror = cleanup;
                     }
                 });
-            }));
+            });
+
+            if (imageLoadPromises.length > 0) {
+                await Promise.race([
+                    Promise.all(imageLoadPromises),
+                    new Promise(resolve => setTimeout(resolve, 5000)) // Overall 5 second limit
+                ]);
+            }
 
             // Wait for styling to be applied
             await new Promise(resolve => setTimeout(resolve, 500));
 
             try {
-                // Use html2canvas with optimized settings
+                // Use html2canvas with optimized settings for complex HTML
                 const canvas = await html2canvas(container, {
                     scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
+                    useCORS: false, // Disable CORS to avoid hanging on external resources
+                    allowTaint: true, // Allow tainted canvas (images that fail to load)
                     backgroundColor: '#ffffff',
                     logging: false,
                     windowWidth: 1200,
-                    windowHeight: bodyElement.scrollHeight,
+                    windowHeight: Math.max(bodyElement.scrollHeight, 1000), // Ensure minimum height
+                    timeout: 30000, // 30 second timeout
                     onclone: (clonedDocument) => {
                         const clonedBody = clonedDocument.querySelector('body');
                         if (clonedBody) {
                             clonedBody.style.margin = '0';
                             clonedBody.style.padding = '20px';
                             clonedBody.style.width = '1200px';
+                            // Ensure no hidden elements
+                            clonedBody.style.display = 'block';
                         }
+                        // Remove scripts from cloned document to prevent issues
+                        const scripts = clonedDocument.querySelectorAll('script');
+                        scripts.forEach(script => script.remove());
                     }
                 });
 
                 if (canvas.width === 0 || canvas.height === 0) {
-                    throw new Error('Canvas rendering resulted in empty image');
+                    throw new Error('Canvas rendering resulted in empty image. Check your HTML content.');
                 }
 
                 const imgData = canvas.toDataURL('image/png', 0.95);
@@ -1126,23 +1224,31 @@
                 const imgWidth = pageWidth - (2 * margin);
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
                 
+                // Fixed pagination logic
                 let heightLeft = imgHeight;
-                let position = margin;
+                let position = 0;
 
+                // Add first page
                 pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                 heightLeft -= (pageHeight - 2 * margin);
 
+                // Add subsequent pages
                 while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
+                    position = heightLeft - imgHeight + margin;
                     pdf.addPage();
                     pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                     heightLeft -= (pageHeight - 2 * margin);
                 }
 
+                const pageCount = Math.ceil(imgHeight / (pageHeight - 2 * margin));
                 pdf.save(title + '.pdf');
+                console.log('✓ PDF generated successfully with', pageCount, 'page(s)');
+                showAlert(`PDF created successfully (${pageCount} page${pageCount > 1 ? 's' : ''})`, 'success');
             } catch (error) {
                 console.error('PDF conversion error:', error);
-                throw error;
+                const errorMsg = error.message || 'Unknown error';
+                showAlert(`Failed to convert HTML: ${errorMsg}`, 'danger');
+                throw new Error(`HTML to PDF conversion failed: ${errorMsg}`);
             } finally {
                 document.body.removeChild(container);
             }
