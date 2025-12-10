@@ -895,6 +895,7 @@
         }
 
         // Extract CSS from HTML and inject it into container
+        // Extract CSS from HTML and inject it into container
         function extractAndApplyStyles(html, container) {
             // Extract all style tags
             const styleMatches = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) || [];
@@ -906,7 +907,47 @@
                 container.appendChild(style);
             });
 
-            // Also extract link stylesheets if any
+            // Add fallback CSS for common Bootstrap/form classes to ensure rendering
+            const fallbackCSS = document.createElement('style');
+            fallbackCSS.textContent = `
+                /* Bootstrap fallback styles for PDF rendering */
+                .panel { border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; background: #fff; }
+                .panel-heading { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 10px 15px; }
+                .panel-title { margin: 0; font-size: 16px; font-weight: 600; }
+                .panel-body { padding: 15px; }
+                .form-group { margin-bottom: 15px; }
+                .form-control { display: block; width: 100%; padding: 6px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+                .control-label { display: block; margin-bottom: 5px; font-weight: 600; }
+                .required::after { content: ' *'; color: red; }
+                .has-error { margin-top: 5px; }
+                .help-block { display: block; margin-top: 5px; font-size: 12px; color: #999; }
+                .field-validation-valid { display: none; }
+                .reminder { padding: 12px; margin-bottom: 15px; border-radius: 4px; }
+                .reminder-info { background: #d9edf7; border: 1px solid #bce8f1; color: #31708f; }
+                .btn { display: inline-block; padding: 6px 12px; margin-bottom: 0; font-weight: 600; text-align: center; white-space: nowrap; vertical-align: middle; border: 1px solid transparent; border-radius: 4px; cursor: pointer; }
+                .btn-primary { background: #337ab7; color: white; border-color: #2e6da4; }
+                .btn-lg { padding: 10px 16px; font-size: 18px; }
+                .col-sm-4 { width: 33.33%; float: left; padding: 0 15px; }
+                .col-sm-8 { width: 66.66%; float: left; padding: 0 15px; }
+                .form-group > .col-sm-4 { padding-top: 7px; }
+                .login-register { margin-top: 20px; }
+                .login-register > div { float: left; margin-right: 10px; }
+                .reset-password-feedback { margin-top: 15px; font-size: 12px; }
+                input[type="text"], input[type="password"], input[type="email"], textarea { box-sizing: border-box; }
+                a { color: #337ab7; text-decoration: none; }
+                a:hover { text-decoration: underline; }
+                /* Clear floats */
+                .clearfix::after { content: ""; display: table; clear: both; }
+                .panel::after { content: ""; display: table; clear: both; }
+                /* Ensure form inputs are visible */
+                input[type="text"], input[type="password"], input[type="email"] { 
+                    visibility: visible !important;
+                    display: block !important;
+                }
+            `;
+            container.appendChild(fallbackCSS);
+
+            // Also extract link stylesheets if any (with timeout handling)
             const linkMatches = html.match(/<link[^>]*rel=["\']?stylesheet["\']?[^>]*>/gi) || [];
             linkMatches.forEach(linkTag => {
                 const hrefMatch = linkTag.match(/href=["\']?([^"\'\s>]+)["\']?/);
@@ -1047,6 +1088,22 @@
                 el.setAttribute('style', cleanStyle);
             });
 
+            // Force visibility of all form inputs
+            temp.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="checkbox"], input[type="radio"], textarea, select, button').forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.removeAttribute('hidden');
+            });
+
+            // Ensure labels and form elements are not hidden
+            temp.querySelectorAll('label, .form-group, .control-label, .form-control').forEach(el => {
+                const style = el.getAttribute('style') || '';
+                const cleanStyle = style
+                    .replace(/display\s*:\s*none\s*!?;?/gi, 'display: block;')
+                    .replace(/visibility\s*:\s*hidden\s*!?;?/gi, 'visibility: visible;');
+                el.setAttribute('style', cleanStyle);
+            });
+
             return temp.innerHTML;
         }
 
@@ -1173,14 +1230,42 @@
             if (htmlToConvert.toLowerCase().includes('</html>')) {
                 container.innerHTML = htmlToConvert;
             } else {
-                // Otherwise wrap it
+                // Otherwise wrap it with proper HTML structure and fallback styles
                 container.innerHTML = `
                     <html>
                     <head>
                         <meta charset="UTF-8">
                         <style>
                             * { margin: 0; padding: 0; box-sizing: border-box; }
-                            body { font-family: Arial, sans-serif; padding: 20px; background: white; }
+                            html, body { font-family: Arial, sans-serif; padding: 20px; background: white; width: 100%; }
+                            /* Bootstrap fallback styles */
+                            .panel { border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; background: #fff; overflow: auto; }
+                            .panel-heading { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 10px 15px; }
+                            .panel-title { margin: 0; font-size: 16px; font-weight: 600; }
+                            .panel-body { padding: 15px; }
+                            .form-group { margin-bottom: 15px; overflow: auto; }
+                            .form-control { display: block; width: 100%; padding: 6px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+                            .control-label { display: block; margin-bottom: 5px; font-weight: 600; }
+                            .required::after { content: ' *'; color: red; }
+                            .has-error { margin-top: 5px; }
+                            .help-block { display: block; margin-top: 5px; font-size: 12px; color: #999; }
+                            .field-validation-valid { display: none; }
+                            .reminder { padding: 12px; margin-bottom: 15px; border-radius: 4px; }
+                            .reminder-info { background: #d9edf7; border: 1px solid #bce8f1; color: #31708f; }
+                            .btn { display: inline-block; padding: 6px 12px; margin-bottom: 0; font-weight: 600; text-align: center; white-space: nowrap; vertical-align: middle; border: 1px solid transparent; border-radius: 4px; cursor: pointer; }
+                            .btn-primary { background: #337ab7; color: white; border-color: #2e6da4; }
+                            .btn-lg { padding: 10px 16px; font-size: 18px; }
+                            .col-sm-4 { width: 33.33%; float: left; padding: 0 15px; box-sizing: border-box; }
+                            .col-sm-8 { width: 66.66%; float: left; padding: 0 15px; box-sizing: border-box; }
+                            .form-group > .col-sm-4 { padding-top: 7px; }
+                            .login-register { margin-top: 20px; }
+                            .login-register > div { float: left; margin-right: 10px; }
+                            .reset-password-feedback { margin-top: 15px; font-size: 12px; }
+                            input[type="text"], input[type="password"], input[type="email"], textarea { box-sizing: border-box; visibility: visible !important; display: block !important; }
+                            a { color: #337ab7; text-decoration: none; }
+                            a:hover { text-decoration: underline; }
+                            .clearfix::after { content: ""; display: table; clear: both; }
+                            .panel::after { content: ""; display: table; clear: both; }
                         </style>
                     </head>
                     <body>${htmlToConvert}</body>
