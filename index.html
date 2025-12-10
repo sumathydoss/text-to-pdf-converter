@@ -387,7 +387,7 @@
 
         body.dark-mode .alert-success {
             background-color: #1e4620;
-            color: #85e89d;
+            color: #ffffff;
         }
 
         .alert-danger {
@@ -479,7 +479,23 @@
         }
 
         body.dark-mode .text-muted {
-            color: #aaa !important;
+            color: #cccccc !important;
+        }
+
+        .form-control::placeholder,
+        .form-select::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+
+        body.dark-mode .form-control::placeholder,
+        body.dark-mode .form-select::placeholder {
+            color: #cccccc;
+            opacity: 1;
+        }
+
+        body.dark-mode .alert-success strong {
+            color: #ffffff;
         }
 
         .spinner-border {
