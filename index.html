@@ -1335,6 +1335,7 @@
                     windowWidth: 1200,
                     windowHeight: Math.max(bodyElement.scrollHeight, 1000), // Ensure minimum height
                     timeout: 30000, // 30 second timeout
+                    imageTimeout: 1000, // Short timeout for individual images
                     onclone: (clonedDocument) => {
                         const clonedBody = clonedDocument.querySelector('body');
                         if (clonedBody) {
@@ -1347,6 +1348,18 @@
                         // Remove scripts from cloned document to prevent issues
                         const scripts = clonedDocument.querySelectorAll('script');
                         scripts.forEach(script => script.remove());
+                        
+                        // Remove or hide images that are from local file bundles (like Train Passenger Details_files)
+                        // This prevents 404 errors and hanging
+                        const images = clonedDocument.querySelectorAll('img');
+                        images.forEach(img => {
+                            const src = img.getAttribute('src') || '';
+                            // If the src references a local file bundle directory or data URI is not available
+                            if (src.includes('_files/') || src.includes('%20_files') || src.includes('_files%2F')) {
+                                // Hide the image since we can't serve it
+                                img.style.display = 'none';
+                            }
+                        });
                     }
                 });
 
