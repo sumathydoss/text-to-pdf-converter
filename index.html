@@ -876,7 +876,102 @@
             doc.save(title + '.pdf');
         }
 
-        async function convertHTMLToPDF(html, title) {
+        // Helper function to detect if HTML contains JavaScript or external scripts
+        function hasComplexHTML(html) {
+            return /<script[^>]*>(.*?)<\/script>/i.test(html) ||
+                   /on\w+\s*=/i.test(html) ||
+                   /<iframe/i.test(html) ||
+                   /document\.|window\.|setTimeout|setInterval|Promise|async|await|fetch|XMLHttpRequest/i.test(html);
+        }
+
+        // Convert HTML using Puppeteer API (server-side rendering)
+        async function convertHTMLViaPuppeteer(html, title) {
+            const { jsPDF } = window.jspdf;
+
+            try {
+                showAlert('Converting via server (rendering JavaScript)...', 'info');
+
+                // Call the Puppeteer API
+                const response = await fetch('/api/convert-html', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        html: html,
+                        width: 1200,
+                        waitTime: 3000,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+
+                const result = await response.json().catch((err) => {
+                    throw new Error('Invalid response format from server');
+                });
+
+                if (!result.success || !result.image) {
+                    throw new Error(result.error || 'Invalid response from server');
+                }
+
+                // Convert the rendered image to PDF
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        try {
+                            const pdf = new jsPDF({
+                                orientation: 'portrait',
+                                unit: 'mm',
+                                format: 'a4'
+                            });
+
+                            const pageWidth = pdf.internal.pageSize.getWidth();
+                            const pageHeight = pdf.internal.pageSize.getHeight();
+                            const margin = 10;
+                            const imgWidth = pageWidth - (2 * margin);
+                            const imgHeight = (img.height * imgWidth) / img.width;
+                            
+                            let heightLeft = imgHeight;
+                            let position = margin;
+
+                            pdf.addImage(img.src, 'PNG', margin, position, imgWidth, imgHeight);
+                            heightLeft -= (pageHeight - 2 * margin);
+
+                            while (heightLeft > 0) {
+                                position = heightLeft - imgHeight;
+                                pdf.addPage();
+                                pdf.addImage(img.src, 'PNG', margin, position, imgWidth, imgHeight);
+                                heightLeft -= (pageHeight - 2 * margin);
+                            }
+
+                            pdf.save(title + '.pdf');
+                            resolve();
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        reject(new Error('Failed to load rendered image'));
+                    };
+                    
+                    img.src = result.image;
+                });
+
+            } catch (error) {
+                console.error('Puppeteer conversion error:', error);
+                // Fallback to client-side conversion
+                showAlert('Server rendering failed, attempting client-side conversion...', 'warning');
+                await convertHTMLToCanvasPDF(html, title);
+            }
+        }
+
+        // Client-side HTML to PDF conversion
+        async function convertHTMLToCanvasPDF(html, title) {
             const { jsPDF } = window.jspdf;
 
             // Create a temporary container
@@ -971,6 +1066,17 @@
                 throw error;
             } finally {
                 document.body.removeChild(container);
+            }
+        }
+
+        async function convertHTMLToPDF(html, title) {
+            // Check if HTML contains JavaScript or complex elements
+            if (hasComplexHTML(html)) {
+                // Use server-side Puppeteer rendering
+                await convertHTMLViaPuppeteer(html, title);
+            } else {
+                // Use client-side html2canvas
+                await convertHTMLToCanvasPDF(html, title);
             }
         }
 

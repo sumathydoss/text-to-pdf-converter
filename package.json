@@ -18,5 +18,9 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/yourusername/text-to-pdf-converter"
+    },
+    "dependencies": {
+        "puppeteer-core": "^21.0.0",
+        "@sparticuz/chromium": "^121.0.0"
     }
 }
