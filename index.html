@@ -952,23 +952,81 @@
             const temp = document.createElement('div');
             temp.innerHTML = html;
 
-            // Remove script tags
+            // Remove script tags (they won't execute in canvas anyway)
             temp.querySelectorAll('script').forEach(el => el.remove());
 
             // Remove noscript tags
             temp.querySelectorAll('noscript').forEach(el => el.remove());
 
-            // Remove iframe tags (cannot render in canvas)
+            // Handle iframes - try to extract visible content, fall back to placeholder only for external embeds
             temp.querySelectorAll('iframe').forEach(el => {
+                // Keep the iframe element - html2canvas may be able to render it
+                // Only show placeholder if it's an external embed (YouTube, etc.)
+                const src = el.getAttribute('src') || '';
+                const isExternalEmbed = /youtube|vimeo|dailymotion|facebook|instagram|twitter|tiktok/i.test(src);
+                
+                if (isExternalEmbed) {
+                    const placeholder = document.createElement('div');
+                    placeholder.style.border = '2px dashed #999';
+                    placeholder.style.padding = '15px';
+                    placeholder.style.backgroundColor = '#f9f9f9';
+                    placeholder.style.textAlign = 'center';
+                    placeholder.style.color = '#666';
+                    placeholder.style.minHeight = '100px';
+                    placeholder.style.display = 'flex';
+                    placeholder.style.alignItems = 'center';
+                    placeholder.style.justifyContent = 'center';
+                    placeholder.innerHTML = `<span>[External embed: ${src.split('/')[2] || 'embedded content'}]</span>`;
+                    el.replaceWith(placeholder);
+                }
+                // Keep local iframes as-is for rendering
+            });
+
+            // Handle video and audio tags - show info instead of removing
+            temp.querySelectorAll('video').forEach(el => {
+                const poster = el.getAttribute('poster');
                 const placeholder = document.createElement('div');
-                placeholder.style.border = '1px solid #ccc';
-                placeholder.style.padding = '10px';
-                placeholder.style.backgroundColor = '#f5f5f5';
-                placeholder.textContent = '[Embedded content cannot be rendered in PDF]';
+                placeholder.style.border = '2px dashed #999';
+                placeholder.style.padding = '15px';
+                placeholder.style.backgroundColor = '#f0f0f0';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.color = '#333';
+                if (poster) {
+                    placeholder.style.backgroundImage = `url('${poster}')`;
+                    placeholder.style.backgroundSize = 'cover';
+                    placeholder.style.backgroundPosition = 'center';
+                    placeholder.style.minHeight = '200px';
+                } else {
+                    placeholder.style.minHeight = '100px';
+                    placeholder.style.display = 'flex';
+                    placeholder.style.alignItems = 'center';
+                    placeholder.style.justifyContent = 'center';
+                }
+                const text = document.createElement('span');
+                text.style.backgroundColor = 'rgba(255,255,255,0.9)';
+                text.style.padding = '10px';
+                text.style.borderRadius = '4px';
+                text.textContent = '[Video content]';
+                placeholder.appendChild(text);
                 el.replaceWith(placeholder);
             });
 
-            // Remove style attributes that might use external resources
+            temp.querySelectorAll('audio').forEach(el => {
+                const placeholder = document.createElement('div');
+                placeholder.style.border = '2px dashed #999';
+                placeholder.style.padding = '15px';
+                placeholder.style.backgroundColor = '#f9f9f9';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.color = '#666';
+                placeholder.style.minHeight = '60px';
+                placeholder.style.display = 'flex';
+                placeholder.style.alignItems = 'center';
+                placeholder.style.justifyContent = 'center';
+                placeholder.textContent = '[Audio content]';
+                el.replaceWith(placeholder);
+            });
+
+            // Remove style attributes that use external background-images (prevent blocking)
             temp.querySelectorAll('[style*="background-image"]').forEach(el => {
                 const style = el.getAttribute('style');
                 const cleanStyle = style.replace(/background-image\s*:\s*url\([^)]*\)/gi, '');
@@ -979,14 +1037,14 @@
                 }
             });
 
-            // Handle video and audio tags
-            temp.querySelectorAll('video, audio').forEach(el => {
-                const placeholder = document.createElement('div');
-                placeholder.style.border = '1px solid #ccc';
-                placeholder.style.padding = '10px';
-                placeholder.style.backgroundColor = '#f5f5f5';
-                placeholder.textContent = `[${el.tagName} content cannot be rendered in PDF]`;
-                el.replaceWith(placeholder);
+            // Make hidden elements visible for PDF rendering
+            temp.querySelectorAll('[style*="display:none"], [style*="visibility:hidden"], [hidden]').forEach(el => {
+                el.removeAttribute('hidden');
+                const style = el.getAttribute('style') || '';
+                const cleanStyle = style
+                    .replace(/display\s*:\s*none\s*!?;?/gi, 'display: block;')
+                    .replace(/visibility\s*:\s*hidden\s*!?;?/gi, 'visibility: visible;');
+                el.setAttribute('style', cleanStyle);
             });
 
             return temp.innerHTML;
