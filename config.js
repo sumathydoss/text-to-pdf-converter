@@ -11,6 +11,10 @@ export const config = {
     SITE_URL: 'https://text-to-pdf-converter-kappa.vercel.app/',
     SITE_NAME: 'Text to PDF Converter',
 
+    // PDF Output Configuration
+    DEFAULT_TEXT_PDF_NAME: 'document',   // Default filename for text-to-PDF conversions (without .pdf)
+    USE_UPLOADED_FILENAME: true,         // Use uploaded filename for file conversions
+
     // Analytics Configuration
     ANALYTICS_API_ENDPOINT: '/api/log-conversion',
     ENABLE_ANALYTICS: true,

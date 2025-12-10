@@ -689,6 +689,7 @@
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
         let uploadedFile = null;
+        let uploadedFileName = null;
 
         dropZone.addEventListener('click', () => fileInput.click());
 
@@ -750,6 +751,8 @@
             }
 
             uploadedFile = file;
+            // Extract filename without extension for PDF name
+            uploadedFileName = file.name.replace(/\.[^/.]+$/, '');
             displayFile(file);
 
             const reader = new FileReader();
@@ -778,6 +781,7 @@
 
         function clearFile() {
             uploadedFile = null;
+            uploadedFileName = null;
             fileInput.value = '';
             fileList.innerHTML = '';
         }
@@ -804,7 +808,21 @@
         async function convertToPDF() {
             const textContent = document.getElementById('textArea').value.trim();
             const format = window.detectedFormat || 'text';
-            const pdfTitle = document.getElementById('pdfTitle').value || 'document';
+            
+            // User-entered title takes precedence
+            const userEnteredTitle = document.getElementById('pdfTitle').value.trim();
+            let pdfTitle = userEnteredTitle;
+            
+            // If no title entered, use uploaded filename if available
+            if (!pdfTitle && uploadedFileName && window.appConfig.USE_UPLOADED_FILENAME) {
+                pdfTitle = uploadedFileName;
+            }
+            
+            // Final fallback to default
+            if (!pdfTitle) {
+                pdfTitle = window.appConfig.DEFAULT_TEXT_PDF_NAME || 'document';
+            }
+            
             const MAX_TEXT_SIZE = window.appConfig.MAX_TEXT_SIZE;
 
             if (!textContent) {
