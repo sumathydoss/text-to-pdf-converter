@@ -850,7 +850,7 @@
                 // Track the conversion
                 trackConversion(format === 'html' ? 'HTML to PDF' : 'Text to PDF');
                 
-                showAlert('PDF created successfully!', 'success');
+               // showAlert('PDF created successfully!', 'success');
             } catch (error) {
                 console.error('Error:', error);
                 showAlert('Error creating PDF: ' + error.message, 'danger');
