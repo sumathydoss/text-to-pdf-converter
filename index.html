@@ -948,14 +948,21 @@
             container.appendChild(fallbackCSS);
 
             // Also extract link stylesheets if any (with timeout handling)
+            // CRITICAL: Only load stylesheets from CDNs or absolute URLs, skip relative paths
             const linkMatches = html.match(/<link[^>]*rel=["\']?stylesheet["\']?[^>]*>/gi) || [];
             linkMatches.forEach(linkTag => {
                 const hrefMatch = linkTag.match(/href=["\']?([^"\'\s>]+)["\']?/);
                 if (hrefMatch && hrefMatch[1]) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = hrefMatch[1];
-                    container.appendChild(link);
+                    const href = hrefMatch[1];
+                    // Only load absolute URLs (http/https) or data URLs
+                    // Skip relative paths that would resolve to non-existent files
+                    if (href.startsWith('http') || href.startsWith('data:') || href.startsWith('//')) {
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = href;
+                        container.appendChild(link);
+                    }
+                    // Silently skip relative paths to prevent 404 errors
                 }
             });
         }
@@ -1150,6 +1157,18 @@
                     .replace(/display\s*:\s*none\s*!?;?/gi, 'display: block;')
                     .replace(/visibility\s*:\s*hidden\s*!?;?/gi, 'visibility: visible;');
                 el.setAttribute('style', cleanStyle);
+            });
+
+            // Remove duplicate IDs to clean up DOM warnings
+            const seenIds = new Set();
+            temp.querySelectorAll('[id]').forEach(el => {
+                const id = el.getAttribute('id');
+                if (seenIds.has(id)) {
+                    // Remove the id from duplicate elements
+                    el.removeAttribute('id');
+                } else {
+                    seenIds.add(id);
+                }
             });
 
             return temp.innerHTML;
