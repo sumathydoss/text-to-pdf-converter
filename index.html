@@ -999,6 +999,17 @@
             // Remove noscript tags
             temp.querySelectorAll('noscript').forEach(el => el.remove());
 
+            // CRITICAL: Remove ALL link tags that reference external stylesheets from file bundles
+            // This prevents html2canvas from trying to fetch non-existent CSS files
+            temp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                const href = link.getAttribute('href') || '';
+                // Remove if it's from a local file bundle or relative path
+                if (href.includes('_files') || href.includes('%20_files') || 
+                    (href.includes('/') && !href.startsWith('http') && !href.startsWith('//'))) {
+                    link.remove();
+                }
+            });
+
             // CRITICAL: Remove or neutralize images from local file bundles BEFORE html2canvas tries to load them
             // This prevents all those 404 errors
             temp.querySelectorAll('img').forEach(img => {
@@ -1007,6 +1018,19 @@
                 if (src.includes('_files/') || src.includes('%20_files') || src.includes('_files%2F') || src.includes('_files')) {
                     // Remove the entire image element to prevent any loading attempt
                     img.remove();
+                }
+            });
+
+            // Remove any HTML file references that might be in src attributes or links
+            temp.querySelectorAll('[href], [src]').forEach(el => {
+                const href = el.getAttribute('href') || '';
+                const src = el.getAttribute('src') || '';
+                
+                // Remove references to .html, .htm files from file bundles
+                if ((href.endsWith('.html') || href.endsWith('.htm') || 
+                     src.endsWith('.html') || src.endsWith('.html')) &&
+                    (href.includes('_files') || src.includes('_files'))) {
+                    el.remove();
                 }
             });
 
@@ -1345,8 +1369,9 @@
                     logging: false,
                     windowWidth: 1200,
                     windowHeight: Math.max(bodyElement.scrollHeight, 1000), // Ensure minimum height
-                    timeout: 30000, // 30 second timeout
-                    imageTimeout: 1000, // Short timeout for individual images
+                    timeout: 10000, // Reduced timeout to 10 seconds
+                    imageTimeout: 500, // Very short timeout for individual images
+                    useForeignObjectMethod: false, // Don't use foreign object method which can cause extra requests
                     onclone: (clonedDocument) => {
                         const clonedBody = clonedDocument.querySelector('body');
                         if (clonedBody) {
@@ -1360,17 +1385,13 @@
                         const scripts = clonedDocument.querySelectorAll('script');
                         scripts.forEach(script => script.remove());
                         
-                        // Remove or hide images that are from local file bundles (like Train Passenger Details_files)
-                        // This prevents 404 errors and hanging
+                        // Remove ANY remaining images, links, or external resources
                         const images = clonedDocument.querySelectorAll('img');
-                        images.forEach(img => {
-                            const src = img.getAttribute('src') || '';
-                            // If the src references a local file bundle directory or data URI is not available
-                            if (src.includes('_files/') || src.includes('%20_files') || src.includes('_files%2F')) {
-                                // Hide the image since we can't serve it
-                                img.style.display = 'none';
-                            }
-                        });
+                        images.forEach(img => img.remove());
+                        
+                        // Remove any remaining external link references
+                        const links = clonedDocument.querySelectorAll('link');
+                        links.forEach(link => link.remove());
                     }
                 });
 
