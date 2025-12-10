@@ -592,7 +592,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/analytics.js"></script>
     <script type="module">
         import { config } from './config.js';
         window.appConfig = config;
@@ -606,6 +605,45 @@
             document.head.appendChild(script);
         }
     </script>
+    <script>
+        // Simple Analytics Tracker
+        async function trackConversion(format) {
+            try {
+                // Check if analytics is enabled in config
+                if (!window.appConfig?.ENABLE_ANALYTICS) {
+                    return;
+                }
+
+                // Get user's approximate location based on timezone
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const timezoneParts = timezone.split('/');
+                const country = timezoneParts.length > 1 ? timezoneParts[0] : 'Unknown';
+
+                // Send to our logging API endpoint from config
+                const response = await fetch(window.appConfig.ANALYTICS_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        format: format,
+                        country: country,
+                        timestamp: new Date().getTime(),
+                    }),
+                });
+
+                if (response.ok) {
+                    console.log('✓ Conversion tracked');
+                } else {
+                    console.log('Conversion tracking failed (offline or network issue - this is ok)');
+                }
+            } catch (error) {
+                // Silently fail - don't disrupt user experience
+                console.log('Tracking unavailable:', error.message);
+            }
+        }
+
+        // Reinitialize AdSense ads after page loads
         window.addEventListener('load', function() {
             if (window.adsbygoogle) {
                 (adsbygoogle = window.adsbygoogle || []).push({});

@@ -6,11 +6,11 @@ export const config = {
 
     // Google AdSense Configuration
     ADSENSE_PUBLISHER_ID: 'ca-pub-3379746510244069',
-    
+
     // Site Configuration
     SITE_URL: 'https://text-to-pdf-converter-kappa.vercel.app/',
     SITE_NAME: 'Text to PDF Converter',
-    
+
     // Analytics Configuration
     ANALYTICS_API_ENDPOINT: '/api/log-conversion',
     ENABLE_ANALYTICS: true,
