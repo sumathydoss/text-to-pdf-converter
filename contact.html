@@ -598,39 +598,50 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Google reCAPTCHA v2 with Vercel environment variable -->
     <script>
-        // Vercel injects NEXT_PUBLIC_* variables at build time into window
-        // Access via window.__VERCEL_ENV__ or directly if available
-        const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LeuJyksAAAAAG14ND1x7G3gghpAug5G9VRXK2hp';
-        
-        // Load reCAPTCHA script
-        const script = document.createElement('script');
-        script.src = 'https://www.google.com/recaptcha/api.js';
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-        
-        // Initialize reCAPTCHA when API is ready
-        window.onRecaptchaReady = function() {
-            console.log('reCAPTCHA API ready');
-            const recaptchaDiv = document.querySelector('.g-recaptcha');
-            
-            if (recaptchaDiv && window.grecaptcha) {
-                try {
-                    grecaptcha.render(recaptchaDiv, {
-                        sitekey: siteKey,
-                        theme: 'light'
-                    });
-                    console.log('reCAPTCHA v2 rendered successfully');
-                } catch (error) {
-                    console.error('Error rendering reCAPTCHA:', error);
-                }
-            } else {
-                console.warn('grecaptcha not available or recaptcha div not found');
+        // Fetch configuration from API endpoint
+        async function initializeRecaptcha() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                const siteKey = config.recaptchaSiteKey;
+                
+                // Load reCAPTCHA script
+                const script = document.createElement('script');
+                script.src = 'https://www.google.com/recaptcha/api.js';
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+                
+                // Initialize reCAPTCHA when API is ready
+                script.onload = function() {
+                    console.log('reCAPTCHA API ready');
+                    const recaptchaDiv = document.querySelector('.g-recaptcha');
+                    
+                    if (recaptchaDiv && window.grecaptcha) {
+                        try {
+                            grecaptcha.render(recaptchaDiv, {
+                                sitekey: siteKey,
+                                theme: 'light'
+                            });
+                            console.log('reCAPTCHA v2 rendered successfully');
+                        } catch (error) {
+                            console.error('Error rendering reCAPTCHA:', error);
+                        }
+                    } else {
+                        console.warn('grecaptcha not available or recaptcha div not found');
+                    }
+                };
+            } catch (error) {
+                console.error('Failed to fetch reCAPTCHA config:', error);
             }
-        };
+        }
         
-        // Call when script loads
-        script.onload = window.onRecaptchaReady;
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeRecaptcha);
+        } else {
+            initializeRecaptcha();
+        }
     </script>
     
     <script>
