@@ -572,6 +572,8 @@
                                 <textarea class="form-control" id="message" name="message" placeholder="Your message here..." required></textarea>
                             </div>
 
+                            <div class="g-recaptcha" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
+
                             <button type="submit" class="btn btn-primary w-100" id="submitBtn">
                                 <i class="bi bi-send"></i> Send Message
                             </button>
@@ -594,6 +596,26 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
+    <script type="module">
+        import { config } from './config.js';
+        
+        // Initialize reCAPTCHA with site key from config
+        window.recaptchaSiteKey = config.RECAPTCHA_SITE_KEY;
+        
+        // Set the data-sitekey attribute dynamically
+        document.addEventListener('DOMContentLoaded', () => {
+            const recaptchaDiv = document.querySelector('.g-recaptcha');
+            if (recaptchaDiv && window.grecaptcha) {
+                recaptchaDiv.setAttribute('data-sitekey', window.recaptchaSiteKey);
+                grecaptcha.render(recaptchaDiv, {
+                    sitekey: window.recaptchaSiteKey
+                });
+            }
+        });
+    </script>
     
     <script>
         // Dark Mode Toggle
@@ -655,17 +677,26 @@
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Get reCAPTCHA token
+            const recaptchaToken = grecaptcha.getResponse();
+            if (!recaptchaToken) {
+                showAlert('Please complete the reCAPTCHA verification', 'danger');
+                return;
+            }
+            
             // Get form data
             const formData = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value
+                message: document.getElementById('message').value,
+                recaptchaToken: recaptchaToken
             };
             
             // Validate form
             if (!formData.name || !formData.email || !formData.subject || !formData.message) {
                 showAlert('Please fill in all required fields', 'danger');
+                grecaptcha.reset();
                 return;
             }
             
@@ -673,6 +704,7 @@
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(formData.email)) {
                 showAlert('Please enter a valid email address', 'danger');
+                grecaptcha.reset();
                 return;
             }
             
@@ -703,9 +735,10 @@
                 console.error('Error sending message:', error);
                 showAlert('An error occurred. Please try again later or email us directly.', 'danger');
             } finally {
-                // Re-enable submit button
+                // Re-enable submit button and reset reCAPTCHA
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
+                grecaptcha.reset();
             }
         });
     </script>

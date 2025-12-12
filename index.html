@@ -695,6 +695,11 @@
 
                 <!-- Buttons -->
                 <div class="d-flex gap-2">
+                    <div class="g-recaptcha" style="margin-bottom: 20px; display: flex; justify-content: center; flex-basis: 100%;"></div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2">
                     <button class="btn btn-primary flex-grow-1" id="convertBtn">
                         <i class="bi bi-download"></i> Convert to PDF
                     </button>
@@ -731,6 +736,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script type="module">
+        import { config } from './config.js';
+        
+        // Initialize reCAPTCHA with site key from config
+        window.recaptchaSiteKey = config.RECAPTCHA_SITE_KEY;
+        
+        // Set the data-sitekey attribute dynamically
+        document.addEventListener('DOMContentLoaded', () => {
+            const recaptchaDiv = document.querySelector('.g-recaptcha');
+            if (recaptchaDiv && window.grecaptcha) {
+                recaptchaDiv.setAttribute('data-sitekey', window.recaptchaSiteKey);
+                grecaptcha.render(recaptchaDiv, {
+                    sitekey: window.recaptchaSiteKey
+                });
+            }
+        });
+    </script>
     <script type="module">
         import { config } from './config.js';
         window.appConfig = config;
@@ -954,6 +978,13 @@
         document.getElementById('convertBtn').addEventListener('click', convertToPDF);
 
         async function convertToPDF() {
+            // Get reCAPTCHA token
+            const recaptchaToken = grecaptcha.getResponse();
+            if (!recaptchaToken) {
+                showAlert('Please complete the reCAPTCHA verification', 'warning');
+                return;
+            }
+
             const textContent = document.getElementById('textArea').value.trim();
             const format = window.detectedFormat || 'text';
             
@@ -1631,6 +1662,7 @@
             document.getElementById('formatDetected').textContent = 'Plain Text';
             window.detectedFormat = 'text';
             clearFile();
+            grecaptcha.reset();
         });
 
         // Suppress [DOM] duplicate ID warnings during PDF conversion
