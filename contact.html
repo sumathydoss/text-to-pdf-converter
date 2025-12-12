@@ -596,7 +596,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Google reCAPTCHA v3 -->
+    <!-- Google reCAPTCHA v2 -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     
     <script type="module">
@@ -605,14 +605,19 @@
         // Initialize reCAPTCHA with site key from config
         window.recaptchaSiteKey = config.RECAPTCHA_SITE_KEY;
         
-        // Set the data-sitekey attribute dynamically
+        // Set the data-sitekey attribute dynamically for reCAPTCHA v2
         document.addEventListener('DOMContentLoaded', () => {
             const recaptchaDiv = document.querySelector('.g-recaptcha');
             if (recaptchaDiv && window.grecaptcha) {
                 recaptchaDiv.setAttribute('data-sitekey', window.recaptchaSiteKey);
+                // Render reCAPTCHA v2 checkbox
                 grecaptcha.render(recaptchaDiv, {
-                    sitekey: window.recaptchaSiteKey
+                    sitekey: window.recaptchaSiteKey,
+                    theme: 'light'
                 });
+                console.log('reCAPTCHA v2 initialized with site key:', window.recaptchaSiteKey);
+            } else {
+                console.warn('grecaptcha not available or recaptcha div not found');
             }
         });
     </script>
@@ -679,17 +684,18 @@
             
             // Get reCAPTCHA token
             const recaptchaToken = grecaptcha.getResponse();
-            if (!recaptchaToken) {
+            if (!recaptchaToken || recaptchaToken.trim() === '') {
                 showAlert('Please complete the reCAPTCHA verification', 'danger');
+                console.warn('reCAPTCHA token is empty');
                 return;
             }
             
             // Get form data
             const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value,
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                subject: document.getElementById('subject').value.trim(),
+                message: document.getElementById('message').value.trim(),
                 recaptchaToken: recaptchaToken
             };
             
@@ -714,6 +720,7 @@
             submitBtn.innerHTML = '<span class="spinner-small"></span>Sending...';
             
             try {
+                console.log('Sending contact form to /api/send-contact-email...');
                 // Send form data to API
                 const response = await fetch('/api/send-contact-email', {
                     method: 'POST',
@@ -723,17 +730,19 @@
                     body: JSON.stringify(formData)
                 });
                 
+                console.log('Response status:', response.status);
                 const result = await response.json();
+                console.log('Response body:', result);
                 
                 if (response.ok) {
                     showAlert('Message sent successfully! We\'ll be in touch soon.', 'success');
                     contactForm.reset();
                 } else {
-                    showAlert(result.message || 'Failed to send message. Please try again.', 'danger');
+                    showAlert(result.message || `Failed to send message (${response.status}). Please try again.`, 'danger');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                showAlert('An error occurred. Please try again later or email us directly.', 'danger');
+                showAlert('An error occurred: ' + error.message + '. Please try again later or email us directly.', 'danger');
             } finally {
                 // Re-enable submit button and reset reCAPTCHA
                 submitBtn.disabled = false;

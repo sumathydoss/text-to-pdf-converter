@@ -7,7 +7,7 @@
  * Verify reCAPTCHA token with Google
  * @param {string} token - reCAPTCHA token from client
  * @param {string} secretKey - reCAPTCHA secret key
- * @param {number} minScore - Minimum score (0.0-1.0) to pass, default 0.5
+ * @param {number} minScore - Minimum score (0.0-1.0) to pass, default 0.5. Only used for reCAPTCHA v3
  * @returns {Promise<Object>} - { success: boolean, score: number, action: string }
  */
 export async function verifyRecaptcha(token, secretKey, minScore = 0.5) {
@@ -35,18 +35,17 @@ export async function verifyRecaptcha(token, secretKey, minScore = 0.5) {
             return { success: false, error: 'reCAPTCHA verification failed' };
         }
 
-        // Check score (only for v3)
-        if (data.score !== undefined) {
-            if (data.score < minScore) {
-                console.warn(`reCAPTCHA score too low: ${data.score} (minimum: ${minScore})`);
-                return {
-                    success: false,
-                    score: data.score,
-                    error: `Score ${data.score} below minimum ${minScore}`,
-                };
-            }
+        // Check score (only for v3, v2 responses don't have a score)
+        if (data.score !== undefined && data.score < minScore) {
+            console.warn(`reCAPTCHA score too low: ${data.score} (minimum: ${minScore})`);
+            return {
+                success: false,
+                score: data.score,
+                error: `Score ${data.score} below minimum ${minScore}`,
+            };
         }
 
+        // For v2 (checkbox), just return success if verification passed
         return {
             success: true,
             score: data.score,

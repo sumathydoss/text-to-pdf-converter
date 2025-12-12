@@ -16,16 +16,19 @@ import { escapeHtml } from './middleware/htmlSanitizer.js';
  */
 export default async function handler(req, res) {
     // Debug: Log environment variables (remove in production)
+    console.log('📋 [CONTACT FORM] Request received');
+    console.log('📋 Method:', req.method);
     console.log('📋 Environment Check:');
-    console.log('SMTP_HOST:', process.env.SMTP_HOST ? '✓ Set' : '✗ Not set');
-    console.log('SMTP_PORT:', process.env.SMTP_PORT ? '✓ Set' : '✗ Not set');
-    console.log('SMTP_USER:', process.env.SMTP_USER ? '✓ Set' : '✗ Not set');
-    console.log('SMTP_PASS:', process.env.SMTP_PASS ? '✓ Set' : '✗ Not set');
-    console.log('RECAPTCHA_SECRET_KEY:', process.env.RECAPTCHA_SECRET_KEY ? '✓ Set' : '✗ Not set');
-    console.log('CONTACT_EMAIL_RECIPIENT:', process.env.CONTACT_EMAIL_RECIPIENT);
+    console.log('   - SMTP_HOST:', process.env.SMTP_HOST ? '✓ Set' : '✗ Not set');
+    console.log('   - SMTP_PORT:', process.env.SMTP_PORT ? '✓ Set' : '✗ Not set');
+    console.log('   - SMTP_USER:', process.env.SMTP_USER ? '✓ Set' : '✗ Not set');
+    console.log('   - SMTP_PASS:', process.env.SMTP_PASS ? '✓ Set' : '✗ Not set');
+    console.log('   - RECAPTCHA_SECRET_KEY:', process.env.RECAPTCHA_SECRET_KEY ? '✓ Set' : '✗ Not set');
+    console.log('   - CONTACT_EMAIL_RECIPIENT:', process.env.CONTACT_EMAIL_RECIPIENT || 'sumathymohan@hotmail.com');
 
     // Only accept POST requests
     if (req.method !== 'POST') {
+        console.warn('❌ Invalid method:', req.method);
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
@@ -46,9 +49,18 @@ export default async function handler(req, res) {
 
         // Validate required fields
         if (!name || !email || !subject || !message || !recaptchaToken) {
+            const missingFields = [];
+            if (!name) missingFields.push('name');
+            if (!email) missingFields.push('email');
+            if (!subject) missingFields.push('subject');
+            if (!message) missingFields.push('message');
+            if (!recaptchaToken) missingFields.push('recaptchaToken');
+            
+            console.warn('❌ Missing required fields:', missingFields.join(', '));
             return res.status(400).json({
                 error: 'Missing required fields',
-                message: 'Please provide name, email, subject, message, and complete the reCAPTCHA'
+                message: 'Please provide name, email, subject, message, and complete the reCAPTCHA',
+                missingFields: missingFields
             });
         }
 
@@ -56,8 +68,7 @@ export default async function handler(req, res) {
         if (process.env.RECAPTCHA_SECRET_KEY) {
             const recaptchaResult = await verifyRecaptcha(
                 recaptchaToken,
-                process.env.RECAPTCHA_SECRET_KEY,
-                0.5 // Minimum score of 0.5
+                process.env.RECAPTCHA_SECRET_KEY
             );
 
             if (!recaptchaResult.success) {
