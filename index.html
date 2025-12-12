@@ -349,31 +349,36 @@
         }
 
         .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
+            background-color: transparent;
             border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            color: #333;
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            font-size: 20px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            font-size: 20px;
-            z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: color 0.3s ease;
+            margin: 0 10px;
+            padding: 5px;
         }
 
         body.dark-mode .theme-toggle {
-            background: #3d3d3d;
-            color: #ffc107;
+            color: #cccccc;
         }
 
         .theme-toggle:hover {
-            transform: scale(1.1);
+            color: #667eea;
+        }
+
+        body.dark-mode .theme-toggle:hover {
+            color: #a78bfa;
+        }
+
+        body.dark-mode .dark-mode-icon {
+            color: #4ade80 !important;
         }
 
         .alert {
@@ -521,10 +526,6 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
-        <i class="bi bi-moon-fill"></i>
-    </button>
-
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-fluid">
@@ -542,6 +543,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="contact.html"><i class="bi bi-envelope"></i> Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="theme-toggle nav-link" id="themeToggle" title="Toggle Dark Mode">
+                            <i class="bi bi-moon-fill dark-mode-icon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
