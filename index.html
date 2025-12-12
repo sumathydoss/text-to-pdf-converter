@@ -662,7 +662,7 @@
                             <p class="mb-2"><strong>Drag and drop your file here</strong></p>
                             <p class="text-muted mb-0">or click to browse (TXT, HTML)</p>
                         </div>
-                        <input type="file" id="fileInput" class="file-input">
+                        <input type="file" id="fileInput" class="file-input" accept="text/*,.html,.htm,.txt">
                         <div id="fileList"></div>
                     </div>
 
@@ -885,20 +885,7 @@
             if (files.length === 0) return;
 
             const file = files[0];
-            const validTypes = ['text/plain', 'text/html'];
-            const validExtensions = ['.txt', '.html', '.htm'];
             const MAX_FILE_SIZE = window.appConfig.MAX_FILE_SIZE;
-
-            // Check if file type is valid (by MIME type or extension)
-            const hasValidType = validTypes.includes(file.type);
-            const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-            const hasValidExtension = validExtensions.includes(fileExtension);
-
-            if (!hasValidType && !hasValidExtension) {
-                showAlert('Please upload a TXT or HTML file', 'danger');
-                fileInput.value = '';
-                return;
-            }
 
             if (file.size > MAX_FILE_SIZE) {
                 showAlert(`File size exceeds ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB limit. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.`, 'danger');
@@ -913,9 +900,20 @@
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                const content = e.target.result;
-                document.getElementById('textArea').value = content;
-                detectFormat(content);
+                try {
+                    const content = e.target.result;
+                    document.getElementById('textArea').value = content;
+                    detectFormat(content);
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                    showAlert('Error reading file. Please try again.', 'danger');
+                    fileInput.value = '';
+                }
+            };
+            reader.onerror = (error) => {
+                console.error('FileReader error:', error);
+                showAlert('Error reading file. Please try again.', 'danger');
+                fileInput.value = '';
             };
             reader.readAsText(file);
         }
