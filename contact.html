@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact Text to PDF Converter - Get in touch with us for support and inquiries.">
+    <meta name="keywords" content="contact, text to pdf, pdf converter, support">
+    <meta name="author" content="Text to PDF Converter">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://text-to-pdf-converter-kappa.vercel.app/contact">
+    <meta property="og:title" content="Contact Us | Free Text to PDF Converter">
+    <meta property="og:description" content="Get in touch with us for support, feedback, or inquiries about our PDF converter.">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://text-to-pdf-converter-kappa.vercel.app/contact">
+    
+    <title>Contact Us | Free Text to PDF Converter</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23764ba2'/><text x='50' y='65' font-size='80' font-weight='bold' text-anchor='middle' fill='%23ffffff'>📄</text></svg>" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.1);
+        }
+
+        body.dark-mode .dark-mode-icon {
+            color: #4ade80 !important;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        body.dark-mode .navbar {
+            background-color: rgba(45, 45, 45, 0.95) !important;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 20px;
+            color: #667eea !important;
+        }
+
+        body.dark-mode .navbar-brand {
+            color: #a78bfa !important;
+        }
+
+        .nav-link {
+            color: #333 !important;
+            transition: color 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .nav-link:hover {
+            color: #667eea !important;
+        }
+
+        body.dark-mode .nav-link {
+            color: #cccccc !important;
+        }
+
+        body.dark-mode .nav-link:hover {
+            color: #a78bfa !important;
+        }
+
+        .nav-link.active {
+            color: #667eea !important;
+            font-weight: 600;
+        }
+
+        body.dark-mode .nav-link.active {
+            color: #a78bfa !important;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .card {
+            background-color: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-mode .card {
+            background-color: #3d3d3d;
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 30px 20px;
+            border: none;
+        }
+
+        body.dark-mode .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-header h1 {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+            font-size: 2em;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            
+            .main-container {
+                margin: 20px auto;
+            }
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .info-card {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .info-icon {
+            font-size: 1.5em;
+            color: #667eea;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        body.dark-mode .info-icon {
+            color: #a78bfa;
+        }
+
+        .info-content h3 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        body.dark-mode .info-content h3 {
+            color: #ffffff;
+        }
+
+        .info-content p {
+            color: #666;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        body.dark-mode .info-content p {
+            color: #cccccc;
+        }
+
+        .info-content a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .info-content a:hover {
+            color: #764ba2;
+        }
+
+        body.dark-mode .info-content a {
+            color: #a78bfa;
+        }
+
+        body.dark-mode .info-content a:hover {
+            color: #c9b3ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        body.dark-mode .form-label {
+            color: #ffffff;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: white;
+            border-color: #667eea;
+            color: #333;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background-color: #505050;
+            border-color: #666;
+            color: #ffffff;
+        }
+
+        body.dark-mode .form-control:focus,
+        body.dark-mode .form-select:focus {
+            background-color: #4a4a4a;
+            border-color: #a78bfa;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: #cccccc;
+            opacity: 1;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 150px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            border-color: #667eea;
+            padding: 12px 40px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #764ba2;
+            border-color: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background-color: #ccc;
+            border-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        body.dark-mode .btn-primary {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        body.dark-mode .btn-primary:hover {
+            background-color: #764ba2;
+            border-color: #764ba2;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        body.dark-mode .alert-success {
+            background-color: #1f4620;
+            color: #4ade80;
+            border-left-color: #4ade80;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        body.dark-mode .alert-danger {
+            background-color: #4a1f23;
+            color: #ff6b6b;
+            border-left-color: #ff6b6b;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        body.dark-mode .alert-info {
+            background-color: #1f3d42;
+            color: #4fbddb;
+            border-left-color: #4fbddb;
+        }
+
+        .footer {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 10px;
+        }
+
+        body.dark-mode .footer {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .footer a {
+            color: #a78bfa;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #ffffff;
+        }
+
+        .spinner-small {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+        <i class="bi bi-moon-fill"></i>
+    </button>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="bi bi-file-pdf"></i> Text to PDF</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="bi bi-house"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html"><i class="bi bi-info-circle"></i> About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="contact.html"><i class="bi bi-envelope"></i> Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="card">
+            <div class="card-header">
+                <h1><i class="bi bi-envelope"></i> Contact Us</h1>
+            </div>
+            <div class="card-body">
+                <div id="alertContainer"></div>
+
+                <div class="contact-container">
+                    <!-- Contact Information -->
+                    <div class="contact-info">
+                        <h2 style="margin-top: 0;"><i class="bi bi-chat-dots"></i> Get in Touch</h2>
+                        <p>
+                            Have questions, suggestions, or feedback? We'd love to hear from you! 
+                            Fill out the form or reach out directly using the contact methods below.
+                        </p>
+
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>Email</h3>
+                                <p><a href="mailto:sumathymohan@hotmail.com">sumathymohan@hotmail.com</a></p>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>Response Time</h3>
+                                <p>We typically respond within 24-48 hours</p>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="bi bi-pin-map"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>Online Based</h3>
+                                <p>We're available worldwide and serve customers globally</p>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="bi bi-info-circle"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>Support</h3>
+                                <p>
+                                    For general inquiries, feature requests, or reporting bugs, 
+                                    please use the contact form
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div>
+                        <h2 style="margin-top: 0;"><i class="bi bi-pencil-square"></i> Send us a Message</h2>
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <label for="name" class="form-label">
+                                    <i class="bi bi-person"></i> Your Name *
+                                </label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="John Doe" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email" class="form-label">
+                                    <i class="bi bi-envelope"></i> Your Email *
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="subject" class="form-label">
+                                    <i class="bi bi-chat"></i> Subject *
+                                </label>
+                                <select class="form-select" id="subject" name="subject" required>
+                                    <option value="">Select a subject</option>
+                                    <option value="general">General Inquiry</option>
+                                    <option value="feature">Feature Request</option>
+                                    <option value="bug">Bug Report</option>
+                                    <option value="feedback">Feedback</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="message" class="form-label">
+                                    <i class="bi bi-file-text"></i> Message *
+                                </label>
+                                <textarea class="form-control" id="message" name="message" placeholder="Your message here..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                                <i class="bi bi-send"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="footer" style="margin-top: 50px;">
+                    <p style="margin: 0;">
+                        <i class="bi bi-heart-fill"></i> Thank you for contacting us!
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 0.9em;">
+                        <a href="index.html">Home</a> | 
+                        <a href="about.html">About</a> | 
+                        <a href="contact.html">Contact</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Dark Mode Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            themeToggle.innerHTML = isDarkMode ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-fill"></i>';
+        });
+
+        // Alert System
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = '<i class="bi bi-check-circle"></i> ';
+                    break;
+                case 'danger':
+                    icon = '<i class="bi bi-exclamation-circle"></i> ';
+                    break;
+                case 'info':
+                    icon = '<i class="bi bi-info-circle"></i> ';
+                    break;
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.id = alertId;
+            alert.innerHTML = `${icon}${message}`;
+            
+            alertContainer.appendChild(alert);
+            
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.remove();
+                }
+            }, 5000);
+        }
+
+        // Contact Form Handler
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Validate form
+            if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+                showAlert('Please fill in all required fields', 'danger');
+                return;
+            }
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                showAlert('Please enter a valid email address', 'danger');
+                return;
+            }
+            
+            // Disable submit button and show loading state
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-small"></span>Sending...';
+            
+            try {
+                // Send form data to API
+                const response = await fetch('/api/send-contact-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Message sent successfully! We\'ll be in touch soon.', 'success');
+                    contactForm.reset();
+                } else {
+                    showAlert(result.message || 'Failed to send message. Please try again.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showAlert('An error occurred. Please try again later or email us directly.', 'danger');
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    </script>
+</body>
+</html>
