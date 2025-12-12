@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     console.log('SMTP_USER:', process.env.SMTP_USER ? '✓ Set' : '✗ Not set');
     console.log('SMTP_PASS:', process.env.SMTP_PASS ? '✓ Set' : '✗ Not set');
     console.log('CONTACT_EMAIL_RECIPIENT:', process.env.CONTACT_EMAIL_RECIPIENT);
-    
+
     // Only accept POST requests
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
