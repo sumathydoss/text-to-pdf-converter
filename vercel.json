@@ -1,13 +1,4 @@
 {
     "buildCommand": "echo 'Static site - no build needed'",
-    "outputDirectory": ".",
-    "env": {
-        "NEXT_PUBLIC_RECAPTCHA_SITE_KEY": "@next_public_recaptcha_site_key"
-    },
-    "rewrites": [
-        {
-            "source": "/(.*)",
-            "destination": "/$1"
-        }
-    ]
+    "outputDirectory": "."
 }
