@@ -19,8 +19,7 @@ export const config = {
     ANALYTICS_API_ENDPOINT: '/api/log-conversion',
     ENABLE_ANALYTICS: true,
 
-    // reCAPTCHA Configuration (loaded from environment variables)
-    RECAPTCHA_SITE_KEY: typeof window !== 'undefined' && window.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-        ? window.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-        : '6LeuJyksAAAAAG14ND1x7G3gghpAug5G9VRXK2hp',
+    // reCAPTCHA Configuration - using fallback key
+    // For Vercel static deployment, environment variables are injected at build time
+    RECAPTCHA_SITE_KEY: '6LeuJyksAAAAAG14ND1x7G3gghpAug5G9VRXK2hp',
 };

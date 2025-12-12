@@ -737,21 +737,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Google reCAPTCHA v3 -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script type="module">
-        import { config } from './config.js';
-        
-        // Initialize reCAPTCHA with site key from config
-        window.recaptchaSiteKey = config.RECAPTCHA_SITE_KEY;
-        
-        // Set the data-sitekey attribute dynamically
-        document.addEventListener('DOMContentLoaded', () => {
+    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiReady&render=explicit" async defer></script>
+    <script>
+        // Initialize reCAPTCHA callback - called by Google's API
+        window.onRecaptchaApiReady = function() {
+            console.log('reCAPTCHA API ready');
             const recaptchaDiv = document.querySelector('.g-recaptcha');
+            
             if (recaptchaDiv && window.grecaptcha) {
-                recaptchaDiv.setAttribute('data-sitekey', window.recaptchaSiteKey);
-                grecaptcha.render(recaptchaDiv, {
-                    sitekey: window.recaptchaSiteKey
-                });
+                // Only render if not already rendered
+                if (!recaptchaDiv.innerHTML) {
+                    try {
+                        grecaptcha.render(recaptchaDiv, {
+                            sitekey: window.recaptchaSiteKey || '6LeuJyksAAAAAG14ND1x7G3gghpAug5G9VRXK2hp'
+                        });
+                        console.log('reCAPTCHA v2 initialized with site key:', window.recaptchaSiteKey);
+                    } catch (error) {
+                        console.error('Error rendering reCAPTCHA:', error);
+                    }
+                }
+            } else {
+                console.warn('grecaptcha not available or recaptcha div not found');
+            }
+        };
+        
+        // Load config
+        import('./config.js').then(({ config }) => {
+            window.recaptchaSiteKey = config.RECAPTCHA_SITE_KEY;
+            console.log('Config loaded, site key:', window.recaptchaSiteKey);
+            
+            // If API is already loaded, initialize immediately
+            if (window.grecaptcha) {
+                window.onRecaptchaApiReady();
             }
         });
     </script>
