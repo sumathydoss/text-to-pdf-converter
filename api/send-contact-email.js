@@ -1,4 +1,8 @@
+import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 /**
  * API endpoint to handle contact form submissions and send emails
