@@ -55,7 +55,7 @@ export default async function handler(req, res) {
             if (!subject) missingFields.push('subject');
             if (!message) missingFields.push('message');
             if (!recaptchaToken) missingFields.push('recaptchaToken');
-            
+
             console.warn('❌ Missing required fields:', missingFields.join(', '));
             return res.status(400).json({
                 error: 'Missing required fields',
