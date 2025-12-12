@@ -10,7 +10,7 @@ export default function handler(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=3600');
 
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    
+
     if (!siteKey) {
         return res.status(500).json({
             error: 'reCAPTCHA site key not configured',
