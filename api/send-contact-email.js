@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
         // Validate required fields
         if (!name || !email || !subject || !message) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: 'Missing required fields',
                 message: 'Please provide name, email, subject, and message'
             });
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: 'Invalid email',
                 message: 'Please provide a valid email address'
             });
@@ -40,8 +40,8 @@ export default async function handler(req, res) {
         const recipientEmail = process.env.CONTACT_EMAIL_RECIPIENT || 'sumathymohan@hotmail.com';
 
         // Check if we have SMTP configuration
-        const hasSmtpConfig = process.env.SMTP_HOST && process.env.SMTP_PORT && 
-                              process.env.SMTP_USER && process.env.SMTP_PASS;
+        const hasSmtpConfig = process.env.SMTP_HOST && process.env.SMTP_PORT &&
+            process.env.SMTP_USER && process.env.SMTP_PASS;
 
         if (!hasSmtpConfig) {
             // If no SMTP configured, log the message and return success
@@ -163,8 +163,8 @@ Text to PDF Converter Team
 
     } catch (error) {
         console.error('Error sending contact email:', error);
-        
-        res.status(500).json({ 
+
+        res.status(500).json({
             error: 'Failed to send message',
             message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred while processing your request'
         });
