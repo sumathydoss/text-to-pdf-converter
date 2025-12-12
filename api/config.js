@@ -9,16 +9,8 @@ export default function handler(req, res) {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'public, max-age=3600');
 
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-
-    if (!siteKey) {
-        return res.status(500).json({
-            error: 'reCAPTCHA site key not configured',
-            recaptchaSiteKey: null
-        });
-    }
-
     res.status(200).json({
-        recaptchaSiteKey: siteKey
+        message: 'Configuration endpoint',
+        appName: 'Text to PDF Converter'
     });
 }

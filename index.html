@@ -695,11 +695,6 @@
 
                 <!-- Buttons -->
                 <div class="d-flex gap-2">
-                    <div class="g-recaptcha" style="margin-bottom: 20px; display: flex; justify-content: center; flex-basis: 100%;"></div>
-                </div>
-
-                <!-- Buttons -->
-                <div class="d-flex gap-2">
                     <button class="btn btn-primary flex-grow-1" id="convertBtn">
                         <i class="bi bi-download"></i> Convert to PDF
                     </button>
@@ -736,42 +731,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Google reCAPTCHA v3 -->
-    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiReady&render=explicit" async defer></script>
-    <script>
-        // Initialize reCAPTCHA callback - called by Google's API
-        window.onRecaptchaApiReady = function() {
-            console.log('reCAPTCHA API ready');
-            const recaptchaDiv = document.querySelector('.g-recaptcha');
-            
-            if (recaptchaDiv && window.grecaptcha) {
-                // Only render if not already rendered
-                if (!recaptchaDiv.innerHTML) {
-                    try {
-                        grecaptcha.render(recaptchaDiv, {
-                            sitekey: window.recaptchaSiteKey || '6LeuJyksAAAAAG14ND1x7G3gghpAug5G9VRXK2hp'
-                        });
-                        console.log('reCAPTCHA v2 initialized with site key:', window.recaptchaSiteKey);
-                    } catch (error) {
-                        console.error('Error rendering reCAPTCHA:', error);
-                    }
-                }
-            } else {
-                console.warn('grecaptcha not available or recaptcha div not found');
-            }
-        };
-        
-        // Load config
-        import('./config.js').then(({ config }) => {
-            window.recaptchaSiteKey = config.RECAPTCHA_SITE_KEY;
-            console.log('Config loaded, site key:', window.recaptchaSiteKey);
-            
-            // If API is already loaded, initialize immediately
-            if (window.grecaptcha) {
-                window.onRecaptchaApiReady();
-            }
-        });
-    </script>
     <script type="module">
         import { config } from './config.js';
         window.appConfig = config;
@@ -995,13 +954,6 @@
         document.getElementById('convertBtn').addEventListener('click', convertToPDF);
 
         async function convertToPDF() {
-            // Get reCAPTCHA token
-            const recaptchaToken = grecaptcha.getResponse();
-            if (!recaptchaToken) {
-                showAlert('Please complete the reCAPTCHA verification', 'warning');
-                return;
-            }
-
             const textContent = document.getElementById('textArea').value.trim();
             const format = window.detectedFormat || 'text';
             
@@ -1679,7 +1631,6 @@
             document.getElementById('formatDetected').textContent = 'Plain Text';
             window.detectedFormat = 'text';
             clearFile();
-            grecaptcha.reset();
         });
 
         // Suppress [DOM] duplicate ID warnings during PDF conversion

@@ -572,8 +572,6 @@
                                 <textarea class="form-control" id="message" name="message" placeholder="Your message here..." required></textarea>
                             </div>
 
-                            <div class="g-recaptcha" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
-
                             <button type="submit" class="btn btn-primary w-100" id="submitBtn">
                                 <i class="bi bi-send"></i> Send Message
                             </button>
@@ -596,53 +594,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Google reCAPTCHA v2 with Vercel environment variable -->
-    <script>
-        // Fetch configuration from API endpoint
-        async function initializeRecaptcha() {
-            try {
-                const response = await fetch('/api/config');
-                const config = await response.json();
-                const siteKey = config.recaptchaSiteKey;
-                
-                // Load reCAPTCHA script
-                const script = document.createElement('script');
-                script.src = 'https://www.google.com/recaptcha/api.js';
-                script.async = true;
-                script.defer = true;
-                document.head.appendChild(script);
-                
-                // Initialize reCAPTCHA when API is ready
-                script.onload = function() {
-                    console.log('reCAPTCHA API ready');
-                    const recaptchaDiv = document.querySelector('.g-recaptcha');
-                    
-                    if (recaptchaDiv && window.grecaptcha) {
-                        try {
-                            grecaptcha.render(recaptchaDiv, {
-                                sitekey: siteKey,
-                                theme: 'light'
-                            });
-                            console.log('reCAPTCHA v2 rendered successfully');
-                        } catch (error) {
-                            console.error('Error rendering reCAPTCHA:', error);
-                        }
-                    } else {
-                        console.warn('grecaptcha not available or recaptcha div not found');
-                    }
-                };
-            } catch (error) {
-                console.error('Failed to fetch reCAPTCHA config:', error);
-            }
-        }
-        
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeRecaptcha);
-        } else {
-            initializeRecaptcha();
-        }
-    </script>
     
     <script>
         // Dark Mode Toggle
@@ -704,27 +655,17 @@
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Get reCAPTCHA token
-            const recaptchaToken = grecaptcha.getResponse();
-            if (!recaptchaToken || recaptchaToken.trim() === '') {
-                showAlert('Please complete the reCAPTCHA verification', 'danger');
-                console.warn('reCAPTCHA token is empty');
-                return;
-            }
-            
             // Get form data
             const formData = {
                 name: document.getElementById('name').value.trim(),
                 email: document.getElementById('email').value.trim(),
                 subject: document.getElementById('subject').value.trim(),
-                message: document.getElementById('message').value.trim(),
-                recaptchaToken: recaptchaToken
+                message: document.getElementById('message').value.trim()
             };
             
             // Validate form
             if (!formData.name || !formData.email || !formData.subject || !formData.message) {
                 showAlert('Please fill in all required fields', 'danger');
-                grecaptcha.reset();
                 return;
             }
             
@@ -732,7 +673,6 @@
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(formData.email)) {
                 showAlert('Please enter a valid email address', 'danger');
-                grecaptcha.reset();
                 return;
             }
             
@@ -766,10 +706,9 @@
                 console.error('Error sending message:', error);
                 showAlert('An error occurred: ' + error.message + '. Please try again later or email us directly.', 'danger');
             } finally {
-                // Re-enable submit button and reset reCAPTCHA
+                // Re-enable submit button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-                grecaptcha.reset();
             }
         });
     </script>

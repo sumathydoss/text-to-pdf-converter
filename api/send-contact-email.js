@@ -1,18 +1,16 @@
 import nodemailer from 'nodemailer';
 import { checkRateLimit, getClientIp } from './middleware/rateLimit.js';
-import { verifyRecaptcha } from './middleware/recaptcha.js';
 import { escapeHtml } from './middleware/htmlSanitizer.js';
 
 /**
  * API endpoint to handle contact form submissions and send emails
- * Expects POST request with: { name, email, subject, message, recaptchaToken }
+ * Expects POST request with: { name, email, subject, message }
  * Requires environment variables:
  * - CONTACT_EMAIL_RECIPIENT: Email to receive contact messages
  * - SMTP_HOST: SMTP server host
  * - SMTP_PORT: SMTP server port
  * - SMTP_USER: SMTP authentication username
  * - SMTP_PASS: SMTP authentication password
- * - RECAPTCHA_SECRET_KEY: reCAPTCHA v3 secret key
  */
 export default async function handler(req, res) {
     // Debug: Log environment variables (remove in production)
@@ -23,7 +21,6 @@ export default async function handler(req, res) {
     console.log('   - SMTP_PORT:', process.env.SMTP_PORT ? '✓ Set' : '✗ Not set');
     console.log('   - SMTP_USER:', process.env.SMTP_USER ? '✓ Set' : '✗ Not set');
     console.log('   - SMTP_PASS:', process.env.SMTP_PASS ? '✓ Set' : '✗ Not set');
-    console.log('   - RECAPTCHA_SECRET_KEY:', process.env.RECAPTCHA_SECRET_KEY ? '✓ Set' : '✗ Not set');
     console.log('   - CONTACT_EMAIL_RECIPIENT:', process.env.CONTACT_EMAIL_RECIPIENT || 'sumathymohan@hotmail.com');
 
     // Only accept POST requests
@@ -45,41 +42,22 @@ export default async function handler(req, res) {
             });
         }
 
-        const { name, email, subject, message, recaptchaToken } = req.body;
+        const { name, email, subject, message } = req.body;
 
         // Validate required fields
-        if (!name || !email || !subject || !message || !recaptchaToken) {
+        if (!name || !email || !subject || !message) {
             const missingFields = [];
             if (!name) missingFields.push('name');
             if (!email) missingFields.push('email');
             if (!subject) missingFields.push('subject');
             if (!message) missingFields.push('message');
-            if (!recaptchaToken) missingFields.push('recaptchaToken');
 
             console.warn('❌ Missing required fields:', missingFields.join(', '));
             return res.status(400).json({
                 error: 'Missing required fields',
-                message: 'Please provide name, email, subject, message, and complete the reCAPTCHA',
+                message: 'Please provide name, email, subject, and message',
                 missingFields: missingFields
             });
-        }
-
-        // Verify reCAPTCHA (if configured)
-        if (process.env.RECAPTCHA_SECRET_KEY) {
-            const recaptchaResult = await verifyRecaptcha(
-                recaptchaToken,
-                process.env.RECAPTCHA_SECRET_KEY
-            );
-
-            if (!recaptchaResult.success) {
-                console.warn(`⚠️ reCAPTCHA verification failed for IP: ${clientIp}`, recaptchaResult.error);
-                return res.status(400).json({
-                    error: 'Verification failed',
-                    message: 'reCAPTCHA verification failed. Please try again.'
-                });
-            }
-
-            console.log(`✓ reCAPTCHA verified with score: ${recaptchaResult.score}`);
         }
 
         // Validate email format
