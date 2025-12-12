@@ -112,39 +112,54 @@
         }
 
         .main-container {
-            width: 100%;
             max-width: 1200px;
-            padding: 20px;
-            padding-top: 30px;
+            margin: 40px auto;
+            padding: 0 20px;
+            min-height: calc(100vh - 200px);
+            width: 100%;
         }
 
         .card {
+            background-color: white;
             border: none;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            border-radius: 15px;
-            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
         body.dark-mode .card {
-            background-color: #2d2d2d;
+            background-color: #3d3d3d;
             color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 15px 15px 0 0 !important;
-            padding: 25px;
-            text-align: center;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 30px 20px;
             border: none;
         }
 
         body.dark-mode .card-header {
-            background: linear-gradient(135deg, #404040 0%, #505050 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-header h1 {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+            font-size: 2em;
         }
 
         .card-body {
-            padding: 25px;
+            padding: 40px;
         }
 
         .input-sections-container {
@@ -205,6 +220,10 @@
 
             .card-body {
                 padding: 20px;
+            }
+            
+            .main-container {
+                margin: 20px auto;
             }
         }
 
@@ -616,7 +635,7 @@
              data-full-width-responsive="true"></ins>
     </div>
 
-    <div class="main-container" style="margin-top: 20px;">
+    <div class="main-container">
         <div class="card">
             <div class="card-header">
                 <h1><i class="bi bi-file-pdf"></i> Text to PDF Converter</h1>
