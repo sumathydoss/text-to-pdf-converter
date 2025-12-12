@@ -1,8 +1,4 @@
-import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
-
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
 
 /**
  * API endpoint to handle contact form submissions and send emails
@@ -15,6 +11,14 @@ dotenv.config({ path: '.env.local' });
  * - SMTP_PASS: SMTP authentication password
  */
 export default async function handler(req, res) {
+    // Debug: Log environment variables (remove in production)
+    console.log('📋 Environment Check:');
+    console.log('SMTP_HOST:', process.env.SMTP_HOST ? '✓ Set' : '✗ Not set');
+    console.log('SMTP_PORT:', process.env.SMTP_PORT ? '✓ Set' : '✗ Not set');
+    console.log('SMTP_USER:', process.env.SMTP_USER ? '✓ Set' : '✗ Not set');
+    console.log('SMTP_PASS:', process.env.SMTP_PASS ? '✓ Set' : '✗ Not set');
+    console.log('CONTACT_EMAIL_RECIPIENT:', process.env.CONTACT_EMAIL_RECIPIENT);
+    
     // Only accept POST requests
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
