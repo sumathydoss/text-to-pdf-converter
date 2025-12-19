@@ -542,6 +542,55 @@
         body.dark-mode h1 {
             color: #ffffff;
         }
+
+        /* Modal Dark Mode Styles */
+        body.dark-mode .modal-content {
+            background-color: #3d3d3d;
+            color: #ffffff;
+        }
+
+        body.dark-mode .modal-body {
+            color: #ffffff;
+        }
+
+        body.dark-mode .modal-body h3 {
+            color: #a78bfa !important;
+        }
+
+        body.dark-mode .modal-body a {
+            color: #a78bfa;
+        }
+
+        body.dark-mode .modal-body a:hover {
+            color: #c4b5fd;
+        }
+
+        /* Info Section Dark Mode */
+        body.dark-mode .card-body p {
+            color: #cccccc !important;
+        }
+
+        .btn-outline-primary {
+            color: #667eea;
+            border-color: #667eea;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        body.dark-mode .btn-outline-primary {
+            color: #a78bfa;
+            border-color: #a78bfa;
+        }
+
+        body.dark-mode .btn-outline-primary:hover {
+            background-color: #a78bfa;
+            border-color: #a78bfa;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -635,52 +684,100 @@
     </div>
 
     <div class="main-container">
-        <!-- BEGIN: High-Quality Content Section for AdSense -->
-        <section class="card mb-4" style="padding:0 0 0 0;">
-            <div class="card-header">
-                <h2 style="font-size:1.5em; font-weight:700;">Welcome to the Free Text to PDF Converter</h2>
-            </div>
-            <div class="card-body" style="font-size:1.1em;">
-                <p><strong>Text to PDF Converter</strong> is your all-in-one, privacy-first solution for converting plain text or HTML into high-quality PDF documents instantly—right in your browser, with no registration or downloads required.</p>
-                <h3 style="font-size:1.2em; margin-top:1em;">Why Use Our Tool?</h3>
-                <ul>
-                    <li><strong>Completely Free:</strong> No hidden fees, subscriptions, or sign-ups.</li>
-                    <li><strong>Privacy Guaranteed:</strong> All processing happens locally in your browser. Your files and text never leave your device.</li>
-                    <li><strong>Fast & Easy:</strong> Convert text or HTML to PDF in seconds with a simple, user-friendly interface.</li>
-                    <li><strong>Flexible Input:</strong> Paste text, upload .txt/.html files, or type directly.</li>
-                    <li><strong>Customizable:</strong> Add a title to your PDF for a professional touch.</li>
-                </ul>
-                <h3 style="font-size:1.2em; margin-top:1em;">How to Use</h3>
-                <ol>
-                    <li><strong>Upload</strong> a .txt or .html file, or paste your content into the text area.</li>
-                    <li>Optionally, enter a title for your PDF.</li>
-                    <li>Click <strong>Convert to PDF</strong> to instantly download your document.</li>
-                </ol>
-                <h3 style="font-size:1.2em; margin-top:1em;">Who Is This For?</h3>
-                <ul>
-                    <li>Students and teachers needing to save notes or assignments as PDFs.</li>
-                    <li>Writers and bloggers archiving drafts or articles.</li>
-                    <li>Professionals sharing formatted reports or documentation.</li>
-                    <li>Anyone who values privacy and simplicity in document conversion.</li>
-                </ul>
-                <h3 style="font-size:1.2em; margin-top:1em;">Frequently Asked Questions</h3>
-                <strong>Is my data safe?</strong>
-                <p>Yes! All conversions are performed in your browser. No data is uploaded or stored on any server.</p>
-                <strong>What file types are supported?</strong>
-                <p>You can upload .txt or .html files, or simply paste your content.</p>
-                <strong>Are there any limits?</strong>
-                <p>There are reasonable size limits to ensure smooth performance, but most standard documents are supported.</p>
-                <strong>Do I need to install anything?</strong>
-                <p>No installation or registration is required. Everything works instantly online.</p>
-                <h3 style="font-size:1.2em; margin-top:1em;">Troubleshooting & Support</h3>
-                <ul>
-                    <li>If your PDF does not download, check your browser’s pop-up blocker settings.</li>
-                    <li>For best results, use modern browsers like Chrome, Edge, or Firefox.</li>
-                    <li>Still have questions? Visit our <a href="about.html">About</a> or <a href="contact.html">Contact</a> page for help.</li>
-                </ul>
+        <!-- BEGIN: Compact Info Section -->
+        <section class="card mb-4" style="padding:0;">
+            <div class="card-body" style="padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <p style="margin: 0; font-size: 1em; color: #555;">
+                        <i class="bi bi-info-circle" style="color: #667eea; margin-right: 8px;"></i>
+                        <strong>Free, privacy-first text to PDF converter</strong> — Convert plain text or HTML to PDF instantly in your browser. No registration required.
+                    </p>
+                </div>
+                <button class="btn btn-outline-primary" id="moreInfoBtn" style="white-space: nowrap;">
+                    <i class="bi bi-question-circle"></i> More Info
+                </button>
             </div>
         </section>
-        <!-- END: High-Quality Content Section for AdSense -->
+        <!-- END: Compact Info Section -->
+
+        <!-- More Info Modal -->
+        <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h5 class="modal-title" id="infoModalLabel" style="color: white;">
+                            <i class="bi bi-info-circle-fill"></i> About Text to PDF Converter
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="font-size: 1em;">
+                        <p><strong>Text to PDF Converter</strong> is your all-in-one, privacy-first solution for converting plain text or HTML into high-quality PDF documents instantly—right in your browser, with no registration or downloads required.</p>
+                        
+                        <h3 style="font-size:1.2em; margin-top:1.5em; color: #667eea;">
+                            <i class="bi bi-star-fill"></i> Why Use Our Tool?
+                        </h3>
+                        <ul>
+                            <li><strong>Completely Free:</strong> No hidden fees, subscriptions, or sign-ups.</li>
+                            <li><strong>Privacy Guaranteed:</strong> All processing happens locally in your browser. Your files and text never leave your device.</li>
+                            <li><strong>Fast & Easy:</strong> Convert text or HTML to PDF in seconds with a simple, user-friendly interface.</li>
+                            <li><strong>Flexible Input:</strong> Paste text, upload .txt/.html files, or type directly.</li>
+                            <li><strong>Customizable:</strong> Add a title to your PDF for a professional touch.</li>
+                        </ul>
+                        
+                        <h3 style="font-size:1.2em; margin-top:1.5em; color: #667eea;">
+                            <i class="bi bi-list-ol"></i> How to Use
+                        </h3>
+                        <ol>
+                            <li><strong>Upload</strong> a .txt or .html file, or paste your content into the text area.</li>
+                            <li>Optionally, enter a title for your PDF.</li>
+                            <li>Click <strong>Convert to PDF</strong> to instantly download your document.</li>
+                        </ol>
+                        
+                        <h3 style="font-size:1.2em; margin-top:1.5em; color: #667eea;">
+                            <i class="bi bi-people-fill"></i> Who Is This For?
+                        </h3>
+                        <ul>
+                            <li>Students and teachers needing to save notes or assignments as PDFs.</li>
+                            <li>Writers and bloggers archiving drafts or articles.</li>
+                            <li>Professionals sharing formatted reports or documentation.</li>
+                            <li>Anyone who values privacy and simplicity in document conversion.</li>
+                        </ul>
+                        
+                        <h3 style="font-size:1.2em; margin-top:1.5em; color: #667eea;">
+                            <i class="bi bi-question-circle-fill"></i> Frequently Asked Questions
+                        </h3>
+                        <div class="faq-item" style="margin-bottom: 1em;">
+                            <strong>Is my data safe?</strong>
+                            <p style="margin: 0.5em 0 0 0;">Yes! All conversions are performed in your browser. No data is uploaded or stored on any server.</p>
+                        </div>
+                        <div class="faq-item" style="margin-bottom: 1em;">
+                            <strong>What file types are supported?</strong>
+                            <p style="margin: 0.5em 0 0 0;">You can upload .txt or .html files, or simply paste your content.</p>
+                        </div>
+                        <div class="faq-item" style="margin-bottom: 1em;">
+                            <strong>Are there any limits?</strong>
+                            <p style="margin: 0.5em 0 0 0;">There are reasonable size limits to ensure smooth performance, but most standard documents are supported.</p>
+                        </div>
+                        <div class="faq-item" style="margin-bottom: 1em;">
+                            <strong>Do I need to install anything?</strong>
+                            <p style="margin: 0.5em 0 0 0;">No installation or registration is required. Everything works instantly online.</p>
+                        </div>
+                        
+                        <h3 style="font-size:1.2em; margin-top:1.5em; color: #667eea;">
+                            <i class="bi bi-tools"></i> Troubleshooting & Support
+                        </h3>
+                        <ul>
+                            <li>If your PDF does not download, check your browser's pop-up blocker settings.</li>
+                            <li>For best results, use modern browsers like Chrome, Edge, or Firefox.</li>
+                            <li>Still have questions? Visit our <a href="about.html">About</a> or <a href="contact.html">Contact</a> page for help.</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-header">
                 <h1><i class="bi bi-file-pdf"></i> Text to PDF Converter</h1>
@@ -853,6 +950,14 @@
                 ? '<i class="bi bi-sun-fill"></i>'
                 : '<i class="bi bi-moon-fill"></i>';
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        });
+
+        // More Info Modal
+        const moreInfoBtn = document.getElementById('moreInfoBtn');
+        const infoModal = new bootstrap.Modal(document.getElementById('infoModal'));
+
+        moreInfoBtn.addEventListener('click', () => {
+            infoModal.show();
         });
 
         // Alert Messages
